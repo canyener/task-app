@@ -55,21 +55,6 @@ router.get('/users/me', auth, async (req, res) => {
    res.send(req.user)
 })
 
-router.get('/users/:id', async (req, res) => {
-    const _id = req.params.id
-
-    try {
-        const user = await User.findById(_id)
-        if(!user) {
-            return res.status(404).send()
-        }    
-
-        res.send(user)
-    } catch (e) {
-        res.status(500).send()
-    }
-})
-
 router.patch('/users/:id', async (req, res) => {
     
     //Return 400 with error message if client sends an invalid property for update
