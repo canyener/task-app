@@ -4,7 +4,17 @@ const multer = require('multer')
 const app = express()
 
 const upload = multer({
-    dest: 'images' 
+    dest: 'images',
+    limits: {
+        fileSize: 1000000 //1 MB
+    },
+    fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(doc|docx)$/)) {
+            return cb(new Error('Please upload a Word document'))
+        }
+
+        cb(undefined, true)
+    }
 })
 
 app.post('/upload', upload.single('upload'), (req, res) => {
