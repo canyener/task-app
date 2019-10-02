@@ -4,7 +4,10 @@ const multer = require('multer')
 const app = express()
 
 const upload = multer({
-    dest: 'images' 
+    dest: 'images',
+    limits: {
+        fileSize: 1000000 //1 MB
+    }
 })
 
 app.post('/upload', upload.single('upload'), (req, res) => {
