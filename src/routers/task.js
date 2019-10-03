@@ -5,7 +5,7 @@ const auth = require('../middleware/auth')
 
 const router = new express.Router()
 
-router.post('/tasks', auth, async (req, res) => {
+router.post('/', auth, async (req, res) => {
     
     const task = new Task({
         ...req.body,
@@ -23,7 +23,7 @@ router.post('/tasks', auth, async (req, res) => {
 //GET /tasks?completed=true
 //GET /tasks?limit=10&skip=10
 //GET /tasks?sortBy=createdAt:desc
-router.get('/tasks', auth, async (req, res) => {
+router.get('/', auth, async (req, res) => {
     const match = {}
     const sort = {}
 
@@ -56,7 +56,7 @@ router.get('/tasks', auth, async (req, res) => {
     }
 })
 
-router.get('/tasks/:id', auth, async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     const _id = req.params.id
 
     try {
@@ -73,7 +73,7 @@ router.get('/tasks/:id', auth, async (req, res) => {
     }
 })
 
-router.patch('/tasks/:id', auth, async (req, res) => {
+router.patch('/:id', auth, async (req, res) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['description', 'completed']
     const isValidOperation = updates.every(update => allowedUpdates.includes(update))
@@ -98,7 +98,7 @@ router.patch('/tasks/:id', auth, async (req, res) => {
     }
 })
 
-router.delete('/tasks/:id', auth, async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const task = await Task.findOneAndDelete({ _id: req.params.id, owner: req.user._id })
 
