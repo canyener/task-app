@@ -4,9 +4,15 @@ const sendgridAPIKey = 'SG.vuFdjCoST1aEcG-dffTJZg.aAl_CYdGoXMJpRrGdEeKE0I7aM3vYe
 
 sgMail.setApiKey(sendgridAPIKey)
 
-sgMail.send({
-    to:'can.yener@hotmail.com.tr',
-    from: 'duneverjudgeme@gmail.com',
-    subject: 'Mail from nodejs',
-    text: 'Sent from node task app'
-})
+const sendWelcomeEmail = (email, name) => {
+    sgMail.send({
+        to: email,
+        from: 'can.yener@hotmail.com.tr',
+        subject: 'Thanks for joining in!',
+        text: `Welcome to the Task App ${name}. Let me know how you get along with the app`
+    })
+}
+
+module.exports = {
+    sendWelcomeEmail
+}
