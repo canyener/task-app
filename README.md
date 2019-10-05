@@ -3,4 +3,4 @@
 #A simple task manager written with nodejs for learning purposes.
 #Includes file uploads, email sending and user profiles.
 
-#Commiting environment variables on purpose for instructional reasonings.
+#Commiting env files on purpose for instructional reasonings.
