@@ -1,4 +1,4 @@
-const calculateTip = (total, tipPercent) => total + (total * tipPercent)
+const calculateTip = (total, tipPercent = .25) => total + (total * tipPercent)
 
 module.exports = {
     calculateTip
