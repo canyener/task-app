@@ -37,3 +37,9 @@ test('Should add two numbers', (done) => {
         done()
     })
 })
+
+test('Should add two numbers async/await', async () => {
+    const actual = await add(2, 3)
+    const expected = 5
+    expect(actual).toBe(expected)
+})
