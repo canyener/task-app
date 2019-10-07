@@ -8,6 +8,9 @@
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
     "test": "env-cmd -f ./config/test.env jest --watch"
   },
+  "jest": {
+    "testEnvironment": "node"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/canyener/task-app.git"
