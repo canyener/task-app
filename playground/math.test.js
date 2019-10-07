@@ -43,3 +43,16 @@ test('Should add two numbers async/await', async () => {
     const expected = 5
     expect(actual).toBe(expected)
 })
+
+test('Should return error message with negative numbers', (done) => {
+    const expected = 'Numbers must be non-negative'
+    add(3, -4).catch(e => {
+        expect(e).toBe(expected)
+        done()
+    })
+})
+
+test('Should return error message with negative numbers async/await', async () => {
+    const expected = 'Numbers must be non-negative'
+    await expect(add(3, -4)).rejects.toEqual(expected)
+})
