@@ -3,8 +3,15 @@ const app = require('../src/app')
 
 const User = require('../src/models/user')
 
+const userOne = {
+    name: 'Cem Yener',
+    email: 'cem@example.com',
+    password: 'cemcem1!'
+}
+
 beforeEach( async () => {
     await User.deleteMany()
+    await new User(userOne).save()
 })
 
 test('Should signup a new user', async () => {
