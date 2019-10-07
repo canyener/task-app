@@ -13,7 +13,7 @@ const userOne = {
     email: 'cem@example.com',
     password: 'cemcem1!',
     tokens: [{
-        token: jwt.sign({_id: userOneId}, proces.env.JWT_SECRET)
+        token: jwt.sign({_id: userOneId}, process.env.JWT_SECRET)
     }]
 }
 
@@ -51,4 +51,12 @@ test('Should NOT login nonexistent user', async () => {
                 password: '12345as!'
             })
             .expect(400)
+})
+
+test('Should get profile for user', async () => {
+    await request(app)
+            .get('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
 })
