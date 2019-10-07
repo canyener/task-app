@@ -54,5 +54,5 @@ test('Should return error message with negative numbers', (done) => {
 
 test('Should return error message with negative numbers async/await', async () => {
     const expected = 'Numbers must be non-negative'
-    await expect(add(3, -4)).rejects.toEqual(expected)
+    await expect(add(3, -4)).rejects.toBe(expected)
 })
