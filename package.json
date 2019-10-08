@@ -6,10 +6,11 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
-    "test": "env-cmd -f ./config/test.env jest --watch --verbose"
+    "test": "env-cmd -f ./config/test.env jest --watch"
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",  
+    "verbose": true
   },
   "repository": {
     "type": "git",
