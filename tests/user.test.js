@@ -22,63 +22,71 @@ beforeEach( async () => {
     await new User(userOne).save()
 })
 
-test('Should signup a new user', async () => {
-    await request(app)
-            .post('/users')
-            .send({
-                name: 'Can Yener',
-                email: 'can@example.com',
-                password: 'cancan1!'
-            })
-            .expect(201)
+describe('POST /users (Signup)', () => {
+    test('Should signup a new user', async () => {
+        await request(app)
+                .post('/users')
+                .send({
+                    name: 'Can Yener',
+                    email: 'can@example.com',
+                    password: 'cancan1!'
+                })
+                .expect(201)
+    })
 })
 
-test('Should login existing user', async () => {
-    await request(app)
-            .post('/users/login')
-            .send({
-                email: userOne.email,
-                password: userOne.password
-            })
-            .expect(200)
+describe('POST /users/login (Login)', () => {
+    test('Should login existing user', async () => {
+        await request(app)
+                .post('/users/login')
+                .send({
+                    email: userOne.email,
+                    password: userOne.password
+                })
+                .expect(200)
+    })
+    
+    test('Should NOT login nonexistent user', async () => {
+        await request(app)
+                .post('/users/login')
+                .send({
+                    email: 'not@existing.com',
+                    password: '12345as!'
+                })
+                .expect(400)
+    })
 })
 
-test('Should NOT login nonexistent user', async () => {
-    await request(app)
-            .post('/users/login')
-            .send({
-                email: 'not@existing.com',
-                password: '12345as!'
-            })
-            .expect(400)
+describe('GET /users/me (Read Profile)', () => {
+    test('Should get profile for user', async () => {
+        await request(app)
+                .get('/users/me')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+                .expect(200)
+    })
+    
+    test('Should NOT get profile for unauthenticated user', async () => {
+        await request(app)
+                .get('/users/me')
+                .send()
+                .expect(401)
+    })
 })
 
-test('Should get profile for user', async () => {
-    await request(app)
-            .get('/users/me')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(200)
-})
-
-test('Should NOT get profile for unauthenticated user', async () => {
-    await request(app)
-            .get('/users/me')
-            .send()
-            .expect(401)
-})
-
-test('Should delete account for user', async () => {
-    await request(app)
-            .delete('/users/me')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(200)
-})
-
-test('Should NOT delete account for unauthenticated user', async () => {
-    await request(app)
-            .delete('/users/me')
-            .send()
-            .expect(401)
+describe('DELETE /users/me (Delete Account)', () => {
+    test('Should delete account for user', async () => {
+        await request(app)
+                .delete('/users/me')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+                .expect(200)
+    })
+    
+    test('Should NOT delete account for unauthenticated user', async () => {
+        await request(app)
+                .delete('/users/me')
+                .send()
+                .expect(401)
+    })
 })
