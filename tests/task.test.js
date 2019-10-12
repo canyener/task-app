@@ -1,7 +1,13 @@
 const request = require('supertest')
 const app = require('../src/app')
 const Task = require('../src/models/task')
-const { userOneId, userOne, setupDatabase} = require('./fixtures/db')
+const { 
+    userOneId, 
+    userOne, 
+    userTwo, 
+    taskOne, 
+    setupDatabase
+} = require('./fixtures/db')
 
 beforeEach(setupDatabase)
 
@@ -25,4 +31,30 @@ describe('POST /tasks', () => {
         //Assert the owner of the task is correct user
         expect(task.owner).toEqual(userOneId)
     })
+})
+
+describe('GET /tasks', () => {
+    test('Should fetch user tasks', async () => {
+        const response = await request(app)
+            .get('/tasks')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+        
+        expect(response.body.length).toEqual(2)
+    })
+})
+
+describe('DELETE /tasks/:id', () => {
+    test('Should not delete tasks owned by another user', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+            .send()
+            .expect(404)
+
+        //Assert task is still in database
+        const task = await Task.findById(taskOne._id)
+        expect(task).toBeTruthy()
+    }) 
 })
