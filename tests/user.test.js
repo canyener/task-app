@@ -115,6 +115,46 @@ describe('DELETE /users/me (Delete Account)', () => {
     })
 })
 
+describe('PATCH /users/me', () => {
+    test('Should update valid user fields', async () => {
+
+        const updatedUser = {
+            name: 'Updated',
+            email: 'updated@example.com'
+        }
+
+        const response = await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send(updatedUser)
+            .expect(200)
+
+        const user = await User.findById(userOneId)
+
+        expect(user).toMatchObject(updatedUser)
+
+        expect(response.body).toMatchObject(updatedUser)
+    })
+
+    test('Should NOT update invalid user fields', async () => {
+        const userWithInvalidFields = {
+            name: 'Test user',
+            location: 'Invalid location'
+        }
+        
+        const response = await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send(userWithInvalidFields)
+            .expect(400)
+
+        expect(response.body.error).toBe('Invalid updates!')
+
+        const user = await User.findById(userOneId)
+        expect(user.location).toBeFalsy()
+    })
+})
+
 describe('File uploads', () => {
     test('Should upload avatar image', async () => {
         await request(app)
