@@ -114,3 +114,16 @@ describe('DELETE /users/me (Delete Account)', () => {
                 .expect(401)
     })
 })
+
+describe('File uploads', () => {
+    test('Should upload avatar image', async () => {
+        await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/profile-pic.jpg')
+            .expect(200)
+        
+        const user = await User.findById(userOneId)
+        expect(user.avatar).toEqual(expect.any(Buffer))
+    })
+})
