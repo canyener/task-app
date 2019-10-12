@@ -129,10 +129,11 @@ describe('PATCH /users/me', () => {
             .send(updatedUser)
             .expect(200)
 
+        //Assert that the database was changed correctly
         const user = await User.findById(userOneId)
-
         expect(user).toMatchObject(updatedUser)
 
+        //Assert that the response is correct
         expect(response.body).toMatchObject(updatedUser)
     })
 
@@ -148,10 +149,12 @@ describe('PATCH /users/me', () => {
             .send(userWithInvalidFields)
             .expect(400)
 
-        expect(response.body.error).toBe('Invalid updates!')
+            //Assert that the database changed correctly
+            const user = await User.findById(userOneId)
+            expect(user.location).toBeFalsy()
 
-        const user = await User.findById(userOneId)
-        expect(user.location).toBeFalsy()
+            //Asser that the response is correct
+            expect(response.body.error).toBe('Invalid updates!')
     })
 })
 
