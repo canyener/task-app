@@ -114,3 +114,59 @@ describe('DELETE /users/me (Delete Account)', () => {
                 .expect(401)
     })
 })
+
+describe('PATCH /users/me', () => {
+    test('Should update valid user fields', async () => {
+
+        const updatedUser = {
+            name: 'Updated',
+            email: 'updated@example.com'
+        }
+
+        const response = await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send(updatedUser)
+            .expect(200)
+
+        //Assert that the database was changed correctly
+        const user = await User.findById(userOneId)
+        expect(user).toMatchObject(updatedUser)
+
+        //Assert that the response is correct
+        expect(response.body).toMatchObject(updatedUser)
+    })
+
+    test('Should NOT update invalid user fields', async () => {
+        const userWithInvalidFields = {
+            name: 'Test user',
+            location: 'Invalid location'
+        }
+        
+        const response = await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send(userWithInvalidFields)
+            .expect(400)
+
+            //Assert that the database changed correctly
+            const user = await User.findById(userOneId)
+            expect(user.location).toBeFalsy()
+
+            //Asser that the response is correct
+            expect(response.body.error).toBe('Invalid updates!')
+    })
+})
+
+describe('File uploads', () => {
+    test('Should upload avatar image', async () => {
+        await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/profile-pic.jpg')
+            .expect(200)
+        
+        const user = await User.findById(userOneId)
+        expect(user.avatar).toEqual(expect.any(Buffer))
+    })
+})
