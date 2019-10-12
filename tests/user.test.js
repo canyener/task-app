@@ -24,7 +24,7 @@ beforeEach( async () => {
 
 describe('POST /users (Signup)', () => {
     test('Should signup a new user', async () => {
-        await request(app)
+        const response = await request(app)
                 .post('/users')
                 .send({
                     name: 'Can Yener',
@@ -32,18 +32,38 @@ describe('POST /users (Signup)', () => {
                     password: 'cancan1!'
                 })
                 .expect(201)
+
+        //Assert that the database was changed correctly
+        const user = await User.findById(response.body.user._id)
+        expect(user).not.toBeNull()
+
+        //Assertions about the response
+        expect(response.body).toMatchObject({
+            user: {
+                name: 'Can Yener',
+                email: 'can@example.com'
+            },
+            token: user.tokens[0].token
+        })
+
+        //Assert that password is not stored as plain text in database
+        expect(user.password).not.toBe('cancan1!')
     })
 })
 
 describe('POST /users/login (Login)', () => {
     test('Should login existing user', async () => {
-        await request(app)
+        const response = await request(app)
                 .post('/users/login')
                 .send({
                     email: userOne.email,
                     password: userOne.password
                 })
                 .expect(200)
+
+         //Assert that the database was changed correctly
+        const user = await User.findById(userOneId)
+        expect (response.body.token).toBe(user.tokens[1].token)
     })
     
     test('Should NOT login nonexistent user', async () => {
@@ -76,11 +96,15 @@ describe('GET /users/me (Read Profile)', () => {
 
 describe('DELETE /users/me (Delete Account)', () => {
     test('Should delete account for user', async () => {
-        await request(app)
-                .delete('/users/me')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-                .expect(200)
+       await request(app)
+            .delete('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+
+        //Assert that the database was changed correctly
+        const user = await User.findById(userOneId)
+        expect(user).toBeFalsy()
     })
     
     test('Should NOT delete account for unauthenticated user', async () => {
