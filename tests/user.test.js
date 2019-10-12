@@ -61,8 +61,8 @@ describe('POST /users/login (Login)', () => {
                 })
                 .expect(200)
 
+         //Assert that the database was changed correctly
         const user = await User.findById(userOneId)
-
         expect (response.body.token).toBe(user.tokens[1].token)
     })
     
@@ -96,11 +96,15 @@ describe('GET /users/me (Read Profile)', () => {
 
 describe('DELETE /users/me (Delete Account)', () => {
     test('Should delete account for user', async () => {
-        await request(app)
-                .delete('/users/me')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-                .expect(200)
+       await request(app)
+            .delete('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+
+        //Assert that the database was changed correctly
+        const user = await User.findById(userOneId)
+        expect(user).toBeFalsy()
     })
     
     test('Should NOT delete account for unauthenticated user', async () => {
