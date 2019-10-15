@@ -7,7 +7,6 @@ const { userOneId, userOne, setupDatabase } = require('./fixtures/db')
 beforeEach(setupDatabase)
 
 describe('POST /users (Signup)', () => {
-
     test('Should return 201 with valid user data', async () => {
         const validUser = {
             name: 'Can',
@@ -75,6 +74,34 @@ describe('POST /users (Signup)', () => {
         const user = User.findById(response.body.user._id)
 
         expect(user.password).not.toEqual('cancan1!')
+    })
+
+    test('Should return 400 with invalid user name', async () => {
+        const invalidUser = {
+            name: '',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+            .expect(400)            
+    })
+
+    test('Should return validation message with invalid user name', async () => {
+        const invalidUser = {
+            name: '',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const expectedErrorMessage = 'User validation failed: name: Path `name` is required.'
+        expect(response.body.message).toEqual(expectedErrorMessage)
     })
 })
 
