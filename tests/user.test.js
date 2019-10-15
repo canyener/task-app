@@ -7,31 +7,74 @@ const { userOneId, userOne, setupDatabase } = require('./fixtures/db')
 beforeEach(setupDatabase)
 
 describe('POST /users (Signup)', () => {
-    test('Should signup a new user', async () => {
+
+    test('Should return 201 with valid user data', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(validUser)
+            .expect(201)
+    })
+
+    test('Should save valid user to database', async () => {
+
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
         const response = await request(app)
-                .post('/users')
-                .send({
-                    name: 'Can Yener',
-                    email: 'can@example.com',
-                    password: 'cancan1!'
-                })
-                .expect(201)
+            .post('/users')
+            .send(validUser)
 
-        //Assert that the database was changed correctly
         const user = await User.findById(response.body.user._id)
-        expect(user).not.toBeNull()
+        expect(user).toBeTruthy() 
+    })
 
-        //Assertions about the response
-        expect(response.body).toMatchObject({
+    test('Should return correct user data in response', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(validUser)
+
+        const user = await User.findById(response.body.user._id)
+
+        const expected = {
             user: {
-                name: 'Can Yener',
+                name: 'Can',
                 email: 'can@example.com'
             },
             token: user.tokens[0].token
-        })
+        }
 
-        //Assert that password is not stored as plain text in database
-        expect(user.password).not.toBe('cancan1!')
+        expect(response.body).toMatchObject(expected)
+    })
+
+    test('Should NOT save plain text password to database', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(validUser)
+
+        const user = User.findById(response.body.user._id)
+
+        expect(user.password).not.toEqual('cancan1!')
     })
 })
 

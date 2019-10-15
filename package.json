@@ -10,7 +10,7 @@
   },
   "jest": {
     "testEnvironment": "node",  
-    "verbose": false
+    "verbose": true
   },
   "repository": {
     "type": "git",
