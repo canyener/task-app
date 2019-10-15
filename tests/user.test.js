@@ -7,31 +7,202 @@ const { userOneId, userOne, setupDatabase } = require('./fixtures/db')
 beforeEach(setupDatabase)
 
 describe('POST /users (Signup)', () => {
-    test('Should signup a new user', async () => {
+    test('Should return 201 with valid user data', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(validUser)
+            .expect(201)
+    })
+
+    test('Should save valid user to database', async () => {
+
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
         const response = await request(app)
-                .post('/users')
-                .send({
-                    name: 'Can Yener',
-                    email: 'can@example.com',
-                    password: 'cancan1!'
-                })
-                .expect(201)
+            .post('/users')
+            .send(validUser)
 
-        //Assert that the database was changed correctly
         const user = await User.findById(response.body.user._id)
-        expect(user).not.toBeNull()
+        expect(user).toBeTruthy() 
+    })
 
-        //Assertions about the response
-        expect(response.body).toMatchObject({
+    test('Should return correct user data in response', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(validUser)
+
+        const user = await User.findById(response.body.user._id)
+
+        const expected = {
             user: {
-                name: 'Can Yener',
+                name: 'Can',
                 email: 'can@example.com'
             },
             token: user.tokens[0].token
-        })
+        }
 
-        //Assert that password is not stored as plain text in database
-        expect(user.password).not.toBe('cancan1!')
+        expect(response.body).toMatchObject(expected)
+    })
+
+    test('Should NOT save plain text password to database', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(validUser)
+
+        const user = User.findById(response.body.user._id)
+
+        expect(user.password).not.toEqual('cancan1!')
+    })
+
+    test('Should return 400 with empty user name', async () => {
+        const invalidUser = {
+            name: '',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+            .expect(400)            
+    })
+
+    test('Should return validation message with empty user name', async () => {
+        const invalidUser = {
+            name: '',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const expectedErrorMessage = 'User validation failed: name: Path `name` is required.'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user with empty name to database' , async () => {
+        const invalidUser = {
+            name: '',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const user = await User.findOne({email: invalidUser.email})
+        expect(user).toBeFalsy()
+    })
+
+    test('Should return 400 with empty email', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: '',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+            .expect(400)
+    })
+
+    test('Should return validation message with empty email', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: '',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const expectedErrorMessage = 'User validation failed: email: Path `email` is required.'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user to database if email is empty', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: '',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+        
+        const users = await User.find({})
+        expect(users.length).toEqual(2)
+    })
+
+    test('Should return 400 if email is invalid', async () => {
+        const invalidUser = {
+            name: 'can',
+            email: 'invalidmail.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+            .expect(400)
+    })
+
+    test('Should return validation message if email is invalid', async () => {
+        const invalidUser = {
+            name: 'can',
+            email: 'can.invalidmail.com',
+            password: 'cancan1!'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const expectedErrorMessage = 'User validation failed: email: Email is invalid'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user to database if email is invalid', async () => {
+        const invalidUser = {
+            name: 'can',
+            email: 'can.invalidmail.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const user = await User.findOne({email: invalidUser.email})
+        expect(user).toBeFalsy()
     })
 })
 
