@@ -204,6 +204,92 @@ describe('POST /users (Signup)', () => {
         const user = await User.findOne({email: invalidUser.email})
         expect(user).toBeFalsy()
     })
+
+    test('Should return validation message with empty password', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: ''
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const expectedErrorMessage = 'User validation failed: password: Path `password` (``) is shorter than the minimum allowed length (7).'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user to database with empty password', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: ''
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const user = await User.findOne({email: invalidUser.email})
+        expect(user).toBeFalsy()
+    })
+
+    test('Should return validation message if password minlength is less than 7', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'test'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const expectedErrorMessage = 'User validation failed: password: Path `password` (`test`) is shorter than the minimum allowed length (7).'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user to database if password length is less than 7', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'tstpwd'            
+        }
+
+        await request(app).post('/users').send(invalidUser)
+
+        const user = await User.findOne({email: invalidUser.email})
+        expect(user).toBeFalsy()
+    })
+
+    test('Should return validation error if password contains word "password"', async () => {
+        const invalidUser = {
+            name : 'Can',
+            email: 'can@example.com',
+            password: 'password1234'
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const expectedErrorMessage = 'User validation failed: password: Password cannot contain the word \"password\"'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user to database if password contains word "password"', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'password1234'
+        }
+
+        await request(app).post('/users').send(invalidUser)
+
+        const user = await User.findOne({email: invalidUser.email})
+        expect(user).toBeFalsy()
+    })
 })
 
 describe('POST /users/login (Login)', () => {
