@@ -290,6 +290,101 @@ describe('POST /users (Signup)', () => {
         const user = await User.findOne({email: invalidUser.email})
         expect(user).toBeFalsy()
     })
+
+    test('Should save age to database as 0 if not sent in request', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!'
+        }
+
+        await request(app)
+            .post('/users')
+            .send(validUser)
+
+        const user = await User.findOne({email: validUser.email})
+        expect(user.age).toEqual(0)
+    })
+
+    test('Should return validation message if age is not Number', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!',
+            age: "invalid"
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+        
+        const expectedErrorMessage = 'User validation failed: age: Cast to Number failed for value \"invalid\" at path \"age\"'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user to database if age is not Number', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!',
+            age: "invalid"
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const user = await User.findOne({email: invalidUser.email})
+        expect(user).toBeFalsy()
+    })
+
+    test('Should return validation message if age is a negative number', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!',
+            age: -1
+        }
+
+        const response = await request(app)
+            .post('/users')
+            .send(invalidUser)
+        
+        const expectedErrorMessage = 'User validation failed: age: Age must be a positive number'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT save user to database if age is a negative number', async () => {
+        const invalidUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!',
+            age: -1
+        }
+
+        await request(app)
+            .post('/users')
+            .send(invalidUser)
+
+        const user = await User.findOne({email: invalidUser.email})
+        expect(user).toBeFalsy()
+    })
+
+    test('Should save age as null to database with empty string', async () => {
+        const validUser = {
+            name: 'Can',
+            email: 'can@example.com',
+            password: 'cancan1!',
+            age: ''
+        }
+
+        await request(app)
+            .post('/users')
+            .send(validUser)
+
+        const user = await User.findOne({email: validUser.email})
+        expect(user.age).toBeNull()
+    })
 })
 
 describe('POST /users/login (Login)', () => {
