@@ -492,6 +492,39 @@ describe('PATCH /users/me', () => {
             //Asser that the response is correct
             expect(response.body.error).toBe('Invalid updates!')
     })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        const validData = {
+            name: 'Update',
+        }
+
+        await request(app)
+            .patch('/users/me')
+            .send(validData)
+            .expect(401)
+    })
+
+    test('Should return authentication error message if user is unauthenticated', async () => {
+        const validData = {
+            name: 'Update'
+        }
+
+        const response = await request(app)
+            .patch('/users/me')
+            .send(validData)
+
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT update user data if user is unauthenticated', async () => {
+        const validData = { name : 'Update' }
+
+        await request(app).patch('/users/me').send(validData)
+
+        const user = await User.findOne({name: validData.name})
+        expect(user).toBeFalsy()
+    })
 })
 
 describe('File uploads', () => {
