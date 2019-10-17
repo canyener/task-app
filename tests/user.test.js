@@ -492,6 +492,61 @@ describe('PATCH /users/me', () => {
             //Asser that the response is correct
             expect(response.body.error).toBe('Invalid updates!')
     })
+
+    test('Should return 400 with invalid name field', async () => {
+        const invalidUpdate = { name: '' }
+
+        await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send(invalidUpdate)
+            .expect(400)
+    })
+
+    test('Should return validation message with invalid name field', async () => {
+        const invalidUpdate = { name: '' }
+
+        const response = await request(app)
+            .patch('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send(invalidUpdate)
+
+        const expectedErrorMessage = 'User validation failed: name: Path `name` is required.'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        const validData = {
+            name: 'Update',
+        }
+
+        await request(app)
+            .patch('/users/me')
+            .send(validData)
+            .expect(401)
+    })
+
+    test('Should return authentication error message if user is unauthenticated', async () => {
+        const validData = {
+            name: 'Update'
+        }
+
+        const response = await request(app)
+            .patch('/users/me')
+            .send(validData)
+
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT update user data if user is unauthenticated', async () => {
+        const validData = { name : 'Update' }
+
+        await request(app).patch('/users/me').send(validData)
+
+        const user = await User.findOne({name: validData.name})
+        expect(user).toBeFalsy()
+    })
 })
 
 describe('File uploads', () => {
