@@ -441,23 +441,38 @@ describe('GET /users/me (Read Profile)', () => {
 })
 
 describe('DELETE /users/me (Delete Account)', () => {
-    test('Should delete account for user', async () => {
-       await request(app)
+    test('Should return 200 with authenticated user', async () => {
+        await request(app)
             .delete('/users/me')
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
             .expect(200)
+    })
 
-        //Assert that the database was changed correctly
+    test('Should delete authenticated user from database', async () => {
+       await request(app)
+            .delete('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
         const user = await User.findById(userOneId)
         expect(user).toBeFalsy()
     })
     
-    test('Should NOT delete account for unauthenticated user', async () => {
+    test('Should return 401 if user is unauthenticated', async () => {
         await request(app)
                 .delete('/users/me')
                 .send()
                 .expect(401)
+    })
+
+    test('Should NOT delete any users if no user is authenticated', async () => {
+        await request(app)
+            .delete('/users/me')
+            .send()
+
+        const users = await User.find({})
+        expect(users.length).toEqual(2)
     })
 })
 
