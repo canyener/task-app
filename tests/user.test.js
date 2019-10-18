@@ -388,21 +388,31 @@ describe('POST /users (Signup)', () => {
 })
 
 describe('POST /users/login (Login)', () => {
-    test('Should login existing user', async () => {
-        const response = await request(app)
-                .post('/users/login')
-                .send({
-                    email: userOne.email,
-                    password: userOne.password
-                })
-                .expect(200)
+    test('Should return 200 OK with existing user', async () => {
+        await request(app)
+            .post('/users/login')
+            .send({
+                email: userOne.email,
+                password: userOne.password
+            })
+            .expect(200)
+    })
 
-         //Assert that the database was changed correctly
+    test('Should generate and save a new authentication token for user', async () => {
+        const response = await request(app)
+            .post('/users/login')
+            .send({
+                email: userOne.email,
+                password: userOne.password
+            })
+        
         const user = await User.findById(userOneId)
-        expect (response.body.token).toBe(user.tokens[1].token)
+        const expectedToken =user.tokens[1].token
+        
+        expect(response.body.token).toEqual(expectedToken)
     })
     
-    test('Should NOT login nonexistent user', async () => {
+    test('Should return 400 with invalid credentials', async () => {
         await request(app)
                 .post('/users/login')
                 .send({
