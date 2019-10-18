@@ -575,14 +575,75 @@ describe('PATCH /users/me', () => {
 })
 
 describe('File uploads', () => {
-    test('Should upload avatar image', async () => {
+    test('Should return 200 with successful upload', async () => {
         await request(app)
             .post('/users/me/avatar')
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .attach('avatar', 'tests/fixtures/profile-pic.jpg')
             .expect(200)
+    })
+
+    test('Should upload avatar image', async () => {
+        await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/profile-pic.jpg')
         
         const user = await User.findById(userOneId)
         expect(user.avatar).toEqual(expect.any(Buffer))
+    })
+
+    test('Should return 400 with invalid key', async () => {
+        await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('invalidKey', 'tests/fixtures/profile-pic.jpg')
+            .expect(400)
+    })
+
+    test('Should return validation error with invalid key', async () => {
+        const response = await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('invalidKey', 'tests/fixtures/profile-pic.jpg')
+        
+        const expectedErrorMessage = 'Unexpected field'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should return 400 if file is not an image', async () => {
+        await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/test-txt-file.txt')
+            .expect(400)
+    })
+
+    test('Should return validation error if file is not an image', async () => {
+        const response = await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/test-txt-file.txt')
+        
+        const expectedErrorMessage = 'Please upload an image!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should return 400 if file is larger than 1MB', async () => {
+        await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/10-mb.jpg')
+            .expect(400)
+    })
+
+    test('Should return validation error if file is larger than 1MB', async () => {
+        const response = await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', 'tests/fixtures/10-mb.jpg')
+        
+        const expectedErrorMessage = 'File too large'
+        expect(response.body.error).toEqual(expectedErrorMessage)
     })
 })
