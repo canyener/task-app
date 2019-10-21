@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken')
 const User = require('../../src/models/user')
 const Task = require('../../src/models/task')
 
+const validObjectId = mongoose.Types.ObjectId()
+
 const userOneId = new mongoose.Types.ObjectId()
 const userOne = {
     _id: userOneId,
@@ -58,6 +60,7 @@ const setupDatabase = async () => {
 }
 
 module.exports = {
+    validObjectId,
     userOneId,
     userOne,
     userTwo,
