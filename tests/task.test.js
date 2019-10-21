@@ -2,6 +2,7 @@ const request = require('supertest')
 const app = require('../src/app')
 const Task = require('../src/models/task')
 const { 
+    validObjectId,
     userOneId, 
     userOne, 
     userTwo, 
@@ -267,15 +268,98 @@ describe('GET /tasks', () => {
 })
 
 describe('DELETE /tasks/:id', () => {
-    test('Should not delete tasks owned by another user', async () => {
+    test('Should return 200 if the owner is authenticated user', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should delete task from database if the owner is authenticated user', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
+        const task = await Task.findById(taskOne._id)
+        expect(task).toBeFalsy()
+    })
+
+    test('Should return deleted task in response', async () => {
+        const task = await Task.findById(taskOne._id)
+
+        const expectedResponse = {
+            _id: task._id.toHexString(),
+            description: task.description,
+            completed: task.completed,
+            owner: task.owner.toHexString()
+        }
+
+        const response = await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
+        expect(response.body).toMatchObject(expectedResponse)
+    })
+
+    test('Should return 404 if task owner is not authenticated user', async () => {
         await request(app)
             .delete(`/tasks/${taskOne._id}`)
             .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
             .send()
             .expect(404)
+    })
 
-        //Assert task is still in database
+    test('Should NOT delete tasks owned by other users', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`) 
+            .send()
+            
         const task = await Task.findById(taskOne._id)
         expect(task).toBeTruthy()
-    }) 
+    })
+
+    test('Should return 404 with valid object id that is not in database', async () => {
+        await request(app)
+            .delete(`/tasks/${validObjectId}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(404)
+    })
+
+    test('Should return 500 with invalid object id', async () => {
+        await request(app)
+            .delete('/tasks/1234')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(500)
+    })
+
+    test('Should return 401 if no user is authenticated', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if no user is authenticated', async () => {
+        const response = await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .send()
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT delete task if no user is authenticated', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .send()
+
+        const task = await Task.findById(taskOne._id)
+        expect(task).toBeTruthy()
+    })
 })
