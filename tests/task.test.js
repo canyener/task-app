@@ -12,7 +12,6 @@ const {
 beforeEach(setupDatabase)
 
 describe('POST /tasks', () => {
-
     test('Should return 201 with valid request' , async () => {
         await request(app)
             .post('/tasks')
@@ -233,14 +232,37 @@ describe('POST /tasks', () => {
 })
 
 describe('GET /tasks', () => {
-    test('Should fetch user tasks', async () => {
-        const response = await request(app)
+    test('Should return 200 if user is authenticated', async () => {
+        await request(app)
             .get('/tasks')
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
             .expect(200)
+    })
+
+    test('Should fetch tasks of authenticated user', async () => {
+        const response = await request(app)
+            .get('/tasks')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
         
         expect(response.body.length).toEqual(2)
+    })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+            .get('/tasks')
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error if user is unauthenticated', async () => {
+        const response = await request(app)
+            .get('/tasks')
+            .send()
+
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
     })
 })
 
