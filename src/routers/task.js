@@ -90,7 +90,7 @@ router.patch('/:id', auth, async (req, res) => {
         }
 
         updates.forEach(update => task[update] = req.body[update])
-        task.save()
+        await task.save()
         res.send(task)
     } catch (e) {
          //if validation error occurs
