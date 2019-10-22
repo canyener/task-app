@@ -513,4 +513,24 @@ describe('PATCH /tasks/:id', () => {
         const task = await Task.findById(taskOne._id)
         expect(task.description).toEqual('Updated task')
     })
+
+    test('Should return 400 with invalid object id', async () => {
+        await request(app)
+            .patch('/tasks/asde1234')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+            .expect(400)
+    })
+
+    test('Should return 404 if object id is valid but task not found in database', async () => {
+        await request(app)
+            .patch(`/tasks/${validObjectId}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)  
+            .send({
+                description: 'Updated task'
+            })
+            .expect(404)
+    })
 })
