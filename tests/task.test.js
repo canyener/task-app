@@ -467,4 +467,50 @@ describe('PATCH /tasks/:id', () => {
         const expectedErrorMessage = 'Please authenticate!'
         expect(response.body.error).toEqual(expectedErrorMessage)
     })
+
+    test('Should return 400 if description is empty', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: ''
+            })
+            .expect(400)
+    })
+    
+    test('Should return validation error if description is empty', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: ''
+            })
+
+        const expectedErrorMessage = 'Task validation failed: description: Path `description` is required.'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT update task if description is empty', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: ''
+            })
+        
+        const task = await Task.findById(taskOne._id)
+        expect(task.description).not.toEqual('')
+    })
+
+    test('Should trim description before saving', async () => {
+        await request(app)
+        .patch(`/tasks/${taskOne._id}`)
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            description: '     Updated task '
+        })
+
+        const task = await Task.findById(taskOne._id)
+        expect(task.description).toEqual('Updated task')
+    })
 })
