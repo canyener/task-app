@@ -514,6 +514,29 @@ describe('PATCH /tasks/:id', () => {
         expect(task.description).toEqual('Updated task')
     })
 
+    test('Should return 400 with invalid completed property', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: 'invalid'
+            })
+            .expect(400)
+    })
+
+    test('Should return validation error message with invalid completed property', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: 'invalid'
+            })
+        const expectedErrorMessage = 'Task validation failed: completed: Cast to Boolean failed for value \"invalid\" at path \"completed\"'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
     test('Should return 400 with invalid object id', async () => {
         await request(app)
             .patch('/tasks/asde1234')
@@ -523,7 +546,7 @@ describe('PATCH /tasks/:id', () => {
             })
             .expect(400)
     })
-
+    
     test('Should return 404 if object id is valid but task not found in database', async () => {
         await request(app)
             .patch(`/tasks/${validObjectId}`)
