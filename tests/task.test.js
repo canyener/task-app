@@ -363,3 +363,50 @@ describe('DELETE /tasks/:id', () => {
         expect(task).toBeTruthy()
     })
 })
+
+describe('PATCH /tasks/:id', () => {
+    test('Should return 200 with valid request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+            .expect(200)
+    })
+
+    test('Should return updated task in response', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+        
+        const expectedTask = {
+            description: 'Updated task',
+            completed: false
+        }
+
+        expect(response.body).toMatchObject(expectedTask)
+    })
+
+    test('Should update task in database', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: true
+            })
+        
+        const expectedTask = {
+            description: 'Updated task',
+            completed: true,
+            owner: userOneId
+        }
+
+        const task = await Task.findById(taskOne._id)
+        expect(task).toMatchObject(expectedTask)
+    })    
+})
