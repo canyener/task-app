@@ -556,4 +556,41 @@ describe('PATCH /tasks/:id', () => {
             })
             .expect(404)
     })
+
+    test('Should return 400 if invalid fields sent in request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                invalidField: 'invalid'
+            })
+            .expect(400)
+    })
+
+    test('Should return error message if invalid fields sent in request', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                invalidField: 'invalid'
+            })
+        
+        const expectedErrorMessage = 'Invalid updates!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT update task if invalid fields sent in request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                invalidField: 'invalid'
+            })
+        
+        const task = await Task.findById(taskOne._id)
+        expect(task.description).not.toEqual('Updated task')
+    })
 })
