@@ -447,4 +447,24 @@ describe('PATCH /tasks/:id', () => {
         const task = await Task.findById(taskTwo._id)
         expect(task.completed).toEqual(true)
     })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .send({
+                description: 'Updated task'
+            })
+            .expect(401)
+    })
+
+    test('Should return authentication error if user is unauthenticated', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .send({
+                description: 'Updated task'
+            })
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
 })
