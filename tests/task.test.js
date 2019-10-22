@@ -7,6 +7,8 @@ const {
     userOne, 
     userTwo, 
     taskOne, 
+    taskTwo,
+    taskThree,
     setupDatabase
 } = require('./fixtures/db')
 
@@ -361,5 +363,234 @@ describe('DELETE /tasks/:id', () => {
 
         const task = await Task.findById(taskOne._id)
         expect(task).toBeTruthy()
+    })
+})
+
+describe('PATCH /tasks/:id', () => {
+    test('Should return 200 with valid request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+            .expect(200)
+    })
+
+    test('Should return updated task in response', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+        
+        const expectedTask = {
+            description: 'Updated task',
+            completed: false,
+            owner: userOneId.toHexString()
+        }
+
+        expect(response.body).toMatchObject(expectedTask)
+    })
+
+    test('Should update task in database', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: true
+            })
+        
+        const expectedTask = {
+            description: 'Updated task',
+            completed: true,
+            owner: userOneId
+        }
+
+        const task = await Task.findById(taskOne._id)
+        expect(task).toMatchObject(expectedTask)
+    })    
+
+    test('Should return 404 with tasks owned by other users', async () => {
+        await request(app)
+            .patch(`/tasks/${taskThree._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: true
+            })
+            .expect(404)
+    })
+
+    test('Should NOT update tasks owned by other users', async () => {
+        await request(app)
+            .patch(`/tasks/${taskThree._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+
+        const task = await Task.findById(taskThree._id)
+        expect(task.description).not.toEqual('Updated task')
+    })    
+
+    test('Should NOT update completed property if not sent in request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskTwo._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+        
+        const task = await Task.findById(taskTwo._id)
+        expect(task.completed).toEqual(true)
+    })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .send({
+                description: 'Updated task'
+            })
+            .expect(401)
+    })
+
+    test('Should return authentication error if user is unauthenticated', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .send({
+                description: 'Updated task'
+            })
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should return 400 if description is empty', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: ''
+            })
+            .expect(400)
+    })
+    
+    test('Should return validation error if description is empty', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: ''
+            })
+
+        const expectedErrorMessage = 'Task validation failed: description: Path `description` is required.'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT update task if description is empty', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: ''
+            })
+        
+        const task = await Task.findById(taskOne._id)
+        expect(task.description).not.toEqual('')
+    })
+
+    test('Should trim description before saving', async () => {
+        await request(app)
+        .patch(`/tasks/${taskOne._id}`)
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send({
+            description: '     Updated task '
+        })
+
+        const task = await Task.findById(taskOne._id)
+        expect(task.description).toEqual('Updated task')
+    })
+
+    test('Should return 400 with invalid completed property', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: 'invalid'
+            })
+            .expect(400)
+    })
+
+    test('Should return validation error message with invalid completed property', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: 'invalid'
+            })
+        const expectedErrorMessage = 'Task validation failed: completed: Cast to Boolean failed for value \"invalid\" at path \"completed\"'
+        expect(response.body.message).toEqual(expectedErrorMessage)
+    })
+
+    test('Should return 400 with invalid object id', async () => {
+        await request(app)
+            .patch('/tasks/asde1234')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+            .expect(400)
+    })
+    
+    test('Should return 404 if object id is valid but task not found in database', async () => {
+        await request(app)
+            .patch(`/tasks/${validObjectId}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)  
+            .send({
+                description: 'Updated task'
+            })
+            .expect(404)
+    })
+
+    test('Should return 400 if invalid fields sent in request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                invalidField: 'invalid'
+            })
+            .expect(400)
+    })
+
+    test('Should return error message if invalid fields sent in request', async () => {
+        const response = await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                invalidField: 'invalid'
+            })
+        
+        const expectedErrorMessage = 'Invalid updates!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT update task if invalid fields sent in request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                invalidField: 'invalid'
+            })
+        
+        const task = await Task.findById(taskOne._id)
+        expect(task.description).not.toEqual('Updated task')
     })
 })
