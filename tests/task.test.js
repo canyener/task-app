@@ -7,6 +7,8 @@ const {
     userOne, 
     userTwo, 
     taskOne, 
+    taskTwo,
+    taskThree,
     setupDatabase
 } = require('./fixtures/db')
 
@@ -385,7 +387,8 @@ describe('PATCH /tasks/:id', () => {
         
         const expectedTask = {
             description: 'Updated task',
-            completed: false
+            completed: false,
+            owner: userOneId.toHexString()
         }
 
         expect(response.body).toMatchObject(expectedTask)
@@ -409,4 +412,39 @@ describe('PATCH /tasks/:id', () => {
         const task = await Task.findById(taskOne._id)
         expect(task).toMatchObject(expectedTask)
     })    
+
+    test('Should return 404 with tasks owned by other users', async () => {
+        await request(app)
+            .patch(`/tasks/${taskThree._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task',
+                completed: true
+            })
+            .expect(404)
+    })
+
+    test('Should NOT update tasks owned by other users', async () => {
+        await request(app)
+            .patch(`/tasks/${taskThree._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+
+        const task = await Task.findById(taskThree._id)
+        expect(task.description).not.toEqual('Updated task')
+    })    
+
+    test('Should NOT update completed property if not sent in request', async () => {
+        await request(app)
+            .patch(`/tasks/${taskTwo._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send({
+                description: 'Updated task'
+            })
+        
+        const task = await Task.findById(taskTwo._id)
+        expect(task.completed).toEqual(true)
+    })
 })
