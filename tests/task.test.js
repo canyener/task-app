@@ -102,7 +102,7 @@ describe('POST /tasks', () => {
             .send({})
 
         const tasks = await Task.find({})
-        expect(tasks.length).toEqual(3)
+        expect(tasks.length).toEqual(8)
     })
 
     test('Should return 400 with empty description', async () => {
@@ -136,7 +136,7 @@ describe('POST /tasks', () => {
             })
         
         const tasks = await Task.find({})
-        expect(tasks.length).toEqual(3)
+        expect(tasks.length).toEqual(8)
     })
 
     
@@ -249,7 +249,7 @@ describe('GET /tasks', () => {
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
         
-        expect(response.body.length).toEqual(2)
+        expect(response.body.length).toEqual(7)
     })
 
     test('Should return 401 if user is unauthenticated', async () => {
@@ -266,6 +266,12 @@ describe('GET /tasks', () => {
 
         const expectedErrorMessage = 'Please authenticate!'
         expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    describe('#Filtering - Sorting - Pagination', () => {
+        test('Should work', () => {
+            expect(1).toBe(1)
+        })
     })
 })
 
