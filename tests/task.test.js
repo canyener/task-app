@@ -306,6 +306,25 @@ describe('GET /tasks', () => {
             expect(response.body[0].description).toEqual('Test Task Four Description')
         })
 
+        test('Should ignore invalid sort patterns', async () => {
+            const response = await request(app)
+                .get('/tasks?sortBy=invalid:::desc')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body[0].description).toEqual('Test Task One Description')
+        })
+
+        test('Should sort tasks correctly by descending by createdAt', async () => {
+            const response = await request(app)
+                .get('/tasks?sortBy=createdAt:desc')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            const tasks = await Task.find({owner: userOneId}).sort({createdAt: -1})
+            const expectedResult = JSON.parse(JSON.stringify(tasks))
+            expect(response.body).toStrictEqual(expectedResult)
+        })
     })
 })
 
