@@ -269,9 +269,43 @@ describe('GET /tasks', () => {
     })
 
     describe('#Filtering - Sorting - Pagination', () => {
-        test('Should work', () => {
-            expect(1).toBe(1)
+        test('Should filter tasks by completed', async () => {
+            const response = await request(app)
+                .get('/tasks?completed=true')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+            
+            expect(response.body.length).toEqual(2)
         })
+
+        test('Should ignore invalid filter keys', async () => {
+            const response = await request(app)
+                .get('/tasks?invalid=123asd')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body.length).toEqual(7)
+        })
+
+        test('Should limit tasks correctly', async () => {
+            const response = await request(app)
+                .get('/tasks?limit=4')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body.length).toEqual(4)
+        })
+
+        test('Should skip tasks correctly', async () => {
+            const response = await request(app)
+                .get('/tasks?skip=2&limit=1')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+            
+            expect(response.body.length).toEqual(1)
+            expect(response.body[0].description).toEqual('Test Task Four Description')
+        })
+
     })
 })
 
