@@ -102,7 +102,7 @@ describe('POST /tasks', () => {
             .send({})
 
         const tasks = await Task.find({})
-        expect(tasks.length).toEqual(3)
+        expect(tasks.length).toEqual(8)
     })
 
     test('Should return 400 with empty description', async () => {
@@ -136,7 +136,7 @@ describe('POST /tasks', () => {
             })
         
         const tasks = await Task.find({})
-        expect(tasks.length).toEqual(3)
+        expect(tasks.length).toEqual(8)
     })
 
     
@@ -249,7 +249,7 @@ describe('GET /tasks', () => {
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
         
-        expect(response.body.length).toEqual(2)
+        expect(response.body.length).toEqual(7)
     })
 
     test('Should return 401 if user is unauthenticated', async () => {
@@ -266,6 +266,65 @@ describe('GET /tasks', () => {
 
         const expectedErrorMessage = 'Please authenticate!'
         expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    describe('#Filtering - Sorting - Pagination', () => {
+        test('Should filter tasks by completed', async () => {
+            const response = await request(app)
+                .get('/tasks?completed=true')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+            
+            expect(response.body.length).toEqual(2)
+        })
+
+        test('Should ignore invalid filter keys', async () => {
+            const response = await request(app)
+                .get('/tasks?invalid=123asd')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body.length).toEqual(7)
+        })
+
+        test('Should limit tasks correctly', async () => {
+            const response = await request(app)
+                .get('/tasks?limit=4')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body.length).toEqual(4)
+        })
+
+        test('Should skip tasks correctly', async () => {
+            const response = await request(app)
+                .get('/tasks?skip=2&limit=1')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+            
+            expect(response.body.length).toEqual(1)
+            expect(response.body[0].description).toEqual('Test Task Four Description')
+        })
+
+        test('Should ignore invalid sort patterns', async () => {
+            const response = await request(app)
+                .get('/tasks?sortBy=invalid:::desc')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body[0].description).toEqual('Test Task One Description')
+        })
+
+        test('Should sort tasks correctly by descending by createdAt', async () => {
+            const response = await request(app)
+                .get('/tasks?sortBy=createdAt:desc')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            const tasks = await Task.find({owner: userOneId}).sort({createdAt: -1})
+            const expectedResult = JSON.parse(JSON.stringify(tasks))
+            expect(response.body).toStrictEqual(expectedResult)
+        })
     })
 })
 
