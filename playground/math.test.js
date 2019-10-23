@@ -1,4 +1,4 @@
-const {calculateTip, fahrenheitToCelcius, celciusToFahrenheit, add} = require('./math')
+const {calculateTip, fahrenheitToCelcius, celciusToFahrenheit, add, addSync} = require('./math')
 
 describe('#calculateTip', () => {
     test('Should calculate total with tip', () => {
@@ -48,6 +48,14 @@ describe('#add', () => {
     //         done()
     //     }, 2000);
     // })
+})
+
+describe('#addSync', () => {
+    const cases = [[2,6,8], [-2, -2, -4], [2, -2, 0]]
+    test.each(cases)("given %p and %p as arguments, returns %p", (firstArg, secondArg, expectedResult) => {
+        const result = addSync(firstArg, secondArg)
+        expect(result).toEqual(expectedResult)
+    })
 })
 
 describe('temperature conversions', () => {

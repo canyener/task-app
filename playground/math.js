@@ -16,9 +16,12 @@ const add = (a, b) => {
     .catch(e => e)
 }
 
+const addSync = (a, b) => a + b
+
 module.exports = {
     calculateTip,
     fahrenheitToCelcius,
     celciusToFahrenheit,
-    add
+    add,
+    addSync
 }
