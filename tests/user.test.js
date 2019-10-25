@@ -683,3 +683,7 @@ describe('POST /logout', () => {
         expect(user.tokens.length).toEqual(0)
     })
 })
+
+describe('POST /users/logoutAll', () => {
+    
+})
