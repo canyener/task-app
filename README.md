@@ -1,4 +1,7 @@
 # node-task-app
+
+[![CircleCI](https://circleci.com/gh/canyener/task-app/tree/master.svg?style=svg)](https://circleci.com/gh/canyener/task-app/tree/master)
+
 - A simple task manager written with nodejs for learning purposes.
 - Includes file uploads, email sending and user profiles.
 - Commiting env files on purpose for instructional reasonings.
