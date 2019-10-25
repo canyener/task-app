@@ -2,9 +2,26 @@ const request = require('supertest')
 
 const app = require('../src/app')
 const User = require('../src/models/user')
-const { userOneId, userOne, setupDatabase } = require('./fixtures/db')
+const { userOneId, userOne, userTwoId, userTwo, setupDatabase } = require('./fixtures/db')
 
 beforeEach(setupDatabase)
+
+describe('GET /users/me (Read Profile)', () => {
+    test('Should get profile for user', async () => {
+        await request(app)
+                .get('/users/me')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+                .expect(200)
+    })
+    
+    test('Should NOT get profile for unauthenticated user', async () => {
+        await request(app)
+                .get('/users/me')
+                .send()
+                .expect(401)
+    })
+})
 
 describe('POST /users (Signup)', () => {
     test('Should return 201 with valid user data', async () => {
@@ -423,56 +440,75 @@ describe('POST /users/login (Login)', () => {
     })
 })
 
-describe('GET /users/me (Read Profile)', () => {
-    test('Should get profile for user', async () => {
+describe('POST /logout', () => {
+    test('Should return 200', async () => {
         await request(app)
-                .get('/users/me')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-                .expect(200)
-    })
-    
-    test('Should NOT get profile for unauthenticated user', async () => {
-        await request(app)
-                .get('/users/me')
-                .send()
-                .expect(401)
-    })
-})
-
-describe('DELETE /users/me (Delete Account)', () => {
-    test('Should return 200 with authenticated user', async () => {
-        await request(app)
-            .delete('/users/me')
+            .post('/users/logout')
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
             .expect(200)
     })
 
-    test('Should delete authenticated user from database', async () => {
-       await request(app)
-            .delete('/users/me')
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+        .post('/users/logout')        
+        .send()
+        .expect(401)
+    })
+
+    test('Should return authentication error message is user is unauthenticated', async () => {
+        const response = await request(app)
+            .post('/users/logout')
+            .send()
+            
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should remove user token', async () => {
+        await request(app)
+            .post('/users/logout')
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
 
         const user = await User.findById(userOneId)
-        expect(user).toBeFalsy()
+        expect(user.tokens.length).toEqual(0)
     })
-    
-    test('Should return 401 if user is unauthenticated', async () => {
-        await request(app)
-                .delete('/users/me')
-                .send()
-                .expect(401)
+})
+
+describe('POST /users/logoutAll', () => {
+    test('Should return 200', async () => {
+         await request(app)
+            .post('/users/logoutAll')
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+            .send()
+            .expect(200)
     })
 
-    test('Should NOT delete any users if no user is authenticated', async () => {
+    test('Should remove all tokens from authenticated user', async () => {
         await request(app)
-            .delete('/users/me')
+            .post('/users/logoutAll')
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
             .send()
 
-        const users = await User.find({})
-        expect(users.length).toEqual(2)
+        const user = await User.findById(userTwoId)
+        expect(user.tokens.length).toEqual(0)
+    })
+
+    test('Should return 401 if no user is authenticated', async () => {
+        await request(app)
+            .post('/users/logoutAll')
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if no user is authenticated', async () => {
+        const response = await request(app)
+            .post('/users/logoutAll')
+            .send()
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
     })
 })
 
@@ -574,6 +610,42 @@ describe('PATCH /users/me', () => {
     })
 })
 
+describe('DELETE /users/me (Delete Account)', () => {
+    test('Should return 200 with authenticated user', async () => {
+        await request(app)
+            .delete('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should delete authenticated user from database', async () => {
+       await request(app)
+            .delete('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
+        const user = await User.findById(userOneId)
+        expect(user).toBeFalsy()
+    })
+    
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+                .delete('/users/me')
+                .send()
+                .expect(401)
+    })
+
+    test('Should NOT delete any users if no user is authenticated', async () => {
+        await request(app)
+            .delete('/users/me')
+            .send()
+
+        const users = await User.find({})
+        expect(users.length).toEqual(2)
+    })
+})
+
 describe('File uploads', () => {
     test('Should return 200 with successful upload', async () => {
         await request(app)
@@ -648,38 +720,3 @@ describe('File uploads', () => {
     })
 })
 
-describe('POST /logout', () => {
-    test('Should return 200', async () => {
-        await request(app)
-            .post('/users/logout')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(200)
-    })
-
-    test('Should return 401 if user is unauthenticated', async () => {
-        await request(app)
-        .post('/users/logout')        
-        .send()
-        .expect(401)
-    })
-
-    test('Should return authentication error message is user is unauthenticated', async () => {
-        const response = await request(app)
-            .post('/users/logout')
-            .send()
-            
-        const expectedErrorMessage = 'Please authenticate!'
-        expect(response.body.error).toEqual(expectedErrorMessage)
-    })
-
-    test('Should remove user token', async () => {
-        await request(app)
-            .post('/users/logout')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-
-        const user = await User.findById(userOneId)
-        expect(user.tokens.length).toEqual(0)
-    })
-})

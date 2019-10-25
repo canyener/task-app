@@ -14,6 +14,171 @@ const {
 
 beforeEach(setupDatabase)
 
+describe('GET /tasks', () => {
+    test('Should return 200 if user is authenticated', async () => {
+        await request(app)
+            .get('/tasks')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should fetch tasks of authenticated user', async () => {
+        const response = await request(app)
+            .get('/tasks')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+        
+        expect(response.body.length).toEqual(7)
+    })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+            .get('/tasks')
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error if user is unauthenticated', async () => {
+        const response = await request(app)
+            .get('/tasks')
+            .send()
+
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    describe('#Filtering - Sorting - Pagination', () => {
+        test('Should filter tasks by completed', async () => {
+            const response = await request(app)
+                .get('/tasks?completed=true')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+            
+            expect(response.body.length).toEqual(2)
+        })
+
+        test('Should ignore invalid filter keys', async () => {
+            const response = await request(app)
+                .get('/tasks?invalid=123asd')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body.length).toEqual(7)
+        })
+
+        test('Should limit tasks correctly', async () => {
+            const response = await request(app)
+                .get('/tasks?limit=4')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body.length).toEqual(4)
+        })
+
+        test('Should skip tasks correctly', async () => {
+            const response = await request(app)
+                .get('/tasks?skip=2&limit=1')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+            
+            expect(response.body.length).toEqual(1)
+            expect(response.body[0].description).toEqual('Test Task Four Description')
+        })
+
+        test('Should ignore invalid sort patterns', async () => {
+            const response = await request(app)
+                .get('/tasks?sortBy=invalid:::desc')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            expect(response.body[0].description).toEqual('Test Task One Description')
+        })
+
+        test('Should sort tasks correctly by descending by createdAt', async () => {
+            const response = await request(app)
+                .get('/tasks?sortBy=createdAt:desc')
+                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+                .send()
+
+            const tasks = await Task.find({owner: userOneId}).sort({createdAt: -1})
+            const expectedResult = JSON.parse(JSON.stringify(tasks))
+            expect(response.body).toStrictEqual(expectedResult)
+        })
+    })
+})
+
+describe('GET /tasks/:id', () => {
+    test('Should return 200 with valid request', async () => {
+        await request(app)
+            .get(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should return correct task in response', async () => {
+        const response = await request(app)
+            .get(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
+        const task = await Task.findById(taskOne._id)
+        const expectedResult = JSON.parse(JSON.stringify(task))
+        
+        expect(response.body).toStrictEqual(expectedResult)
+    })
+
+    test('Should return 404 with task id owned by other users', async () => {
+        await request(app)
+            .get(`/tasks/${taskThree._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(404)
+    })
+
+    test('Should not return task owned by other users', async () => {
+        const response = await request(app)
+            .get(`/tasks/${taskThree._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+        
+        expect(response.body).toEqual({})
+    })
+
+    test('Should return 500 with invalid object id', async () => {
+        await request(app)
+            .get('/tasks/asd1234')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(500)
+    })
+
+    test('Should return 404 if task not found in database', async () => {
+        await request(app)
+            .get(`/tasks/${validObjectId}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(404)
+    })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+            .get(`/tasks/${taskOne._id}`)
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if user is unauthenticated', async () => {
+        const response = await request(app)
+            .get(`/tasks/${taskOne._id}`)
+            .send()
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+})
+
 describe('POST /tasks', () => {
     test('Should return 201 with valid request' , async () => {
         await request(app)
@@ -231,268 +396,6 @@ describe('POST /tasks', () => {
         
         const task = await Task.findOne({ description: 'Test task' })
         expect(task).toBeFalsy()
-    })
-})
-
-describe('GET /tasks', () => {
-    test('Should return 200 if user is authenticated', async () => {
-        await request(app)
-            .get('/tasks')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(200)
-    })
-
-    test('Should fetch tasks of authenticated user', async () => {
-        const response = await request(app)
-            .get('/tasks')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-        
-        expect(response.body.length).toEqual(7)
-    })
-
-    test('Should return 401 if user is unauthenticated', async () => {
-        await request(app)
-            .get('/tasks')
-            .send()
-            .expect(401)
-    })
-
-    test('Should return authentication error if user is unauthenticated', async () => {
-        const response = await request(app)
-            .get('/tasks')
-            .send()
-
-        const expectedErrorMessage = 'Please authenticate!'
-        expect(response.body.error).toEqual(expectedErrorMessage)
-    })
-
-    describe('#Filtering - Sorting - Pagination', () => {
-        test('Should filter tasks by completed', async () => {
-            const response = await request(app)
-                .get('/tasks?completed=true')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-            
-            expect(response.body.length).toEqual(2)
-        })
-
-        test('Should ignore invalid filter keys', async () => {
-            const response = await request(app)
-                .get('/tasks?invalid=123asd')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-
-            expect(response.body.length).toEqual(7)
-        })
-
-        test('Should limit tasks correctly', async () => {
-            const response = await request(app)
-                .get('/tasks?limit=4')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-
-            expect(response.body.length).toEqual(4)
-        })
-
-        test('Should skip tasks correctly', async () => {
-            const response = await request(app)
-                .get('/tasks?skip=2&limit=1')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-            
-            expect(response.body.length).toEqual(1)
-            expect(response.body[0].description).toEqual('Test Task Four Description')
-        })
-
-        test('Should ignore invalid sort patterns', async () => {
-            const response = await request(app)
-                .get('/tasks?sortBy=invalid:::desc')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-
-            expect(response.body[0].description).toEqual('Test Task One Description')
-        })
-
-        test('Should sort tasks correctly by descending by createdAt', async () => {
-            const response = await request(app)
-                .get('/tasks?sortBy=createdAt:desc')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-
-            const tasks = await Task.find({owner: userOneId}).sort({createdAt: -1})
-            const expectedResult = JSON.parse(JSON.stringify(tasks))
-            expect(response.body).toStrictEqual(expectedResult)
-        })
-    })
-})
-
-describe('GET /tasks/:id', () => {
-    test('Should return 200 with valid request', async () => {
-        await request(app)
-            .get(`/tasks/${taskOne._id}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(200)
-    })
-
-    test('Should return correct task in response', async () => {
-        const response = await request(app)
-            .get(`/tasks/${taskOne._id}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-
-        const task = await Task.findById(taskOne._id)
-        const expectedResult = JSON.parse(JSON.stringify(task))
-        
-        expect(response.body).toStrictEqual(expectedResult)
-    })
-
-    test('Should return 404 with task id owned by other users', async () => {
-        await request(app)
-            .get(`/tasks/${taskThree._id}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(404)
-    })
-
-    test('Should not return task owned by other users', async () => {
-        const response = await request(app)
-            .get(`/tasks/${taskThree._id}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-        
-        expect(response.body).toEqual({})
-    })
-
-    test('Should return 500 with invalid object id', async () => {
-        await request(app)
-            .get('/tasks/asd1234')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(500)
-    })
-
-    test('Should return 404 if task not found in database', async () => {
-        await request(app)
-            .get(`/tasks/${validObjectId}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(404)
-    })
-
-    test('Should return 401 if user is unauthenticated', async () => {
-        await request(app)
-            .get(`/tasks/${taskOne._id}`)
-            .send()
-            .expect(401)
-    })
-
-    test('Should return authentication error message if user is unauthenticated', async () => {
-        const response = await request(app)
-            .get(`/tasks/${taskOne._id}`)
-            .send()
-        
-        const expectedErrorMessage = 'Please authenticate!'
-        expect(response.body.error).toEqual(expectedErrorMessage)
-    })
-})
-
-describe('DELETE /tasks/:id', () => {
-    test('Should return 200 if the owner is authenticated user', async () => {
-        await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(200)
-    })
-
-    test('Should delete task from database if the owner is authenticated user', async () => {
-        await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-
-        const task = await Task.findById(taskOne._id)
-        expect(task).toBeFalsy()
-    })
-
-    test('Should return deleted task in response', async () => {
-        const task = await Task.findById(taskOne._id)
-
-        const expectedResponse = {
-            _id: task._id.toHexString(),
-            description: task.description,
-            completed: task.completed,
-            owner: task.owner.toHexString()
-        }
-
-        const response = await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-
-        expect(response.body).toMatchObject(expectedResponse)
-    })
-
-    test('Should return 404 if task owner is not authenticated user', async () => {
-        await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
-            .send()
-            .expect(404)
-    })
-
-    test('Should NOT delete tasks owned by other users', async () => {
-        await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`) 
-            .send()
-            
-        const task = await Task.findById(taskOne._id)
-        expect(task).toBeTruthy()
-    })
-
-    test('Should return 404 with valid object id that is not in database', async () => {
-        await request(app)
-            .delete(`/tasks/${validObjectId}`)
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(404)
-    })
-
-    test('Should return 500 with invalid object id', async () => {
-        await request(app)
-            .delete('/tasks/1234')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send()
-            .expect(500)
-    })
-
-    test('Should return 401 if no user is authenticated', async () => {
-        await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .send()
-            .expect(401)
-    })
-
-    test('Should return authentication error message if no user is authenticated', async () => {
-        const response = await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .send()
-        
-        const expectedErrorMessage = 'Please authenticate!'
-        expect(response.body.error).toEqual(expectedErrorMessage)
-    })
-
-    test('Should NOT delete task if no user is authenticated', async () => {
-        await request(app)
-            .delete(`/tasks/${taskOne._id}`)
-            .send()
-
-        const task = await Task.findById(taskOne._id)
-        expect(task).toBeTruthy()
     })
 })
 
@@ -725,3 +628,99 @@ describe('PATCH /tasks/:id', () => {
     })
 })
 
+describe('DELETE /tasks/:id', () => {
+    test('Should return 200 if the owner is authenticated user', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should delete task from database if the owner is authenticated user', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
+        const task = await Task.findById(taskOne._id)
+        expect(task).toBeFalsy()
+    })
+
+    test('Should return deleted task in response', async () => {
+        const task = await Task.findById(taskOne._id)
+
+        const expectedResponse = {
+            _id: task._id.toHexString(),
+            description: task.description,
+            completed: task.completed,
+            owner: task.owner.toHexString()
+        }
+
+        const response = await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
+        expect(response.body).toMatchObject(expectedResponse)
+    })
+
+    test('Should return 404 if task owner is not authenticated user', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+            .send()
+            .expect(404)
+    })
+
+    test('Should NOT delete tasks owned by other users', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`) 
+            .send()
+            
+        const task = await Task.findById(taskOne._id)
+        expect(task).toBeTruthy()
+    })
+
+    test('Should return 404 with valid object id that is not in database', async () => {
+        await request(app)
+            .delete(`/tasks/${validObjectId}`)
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(404)
+    })
+
+    test('Should return 500 with invalid object id', async () => {
+        await request(app)
+            .delete('/tasks/1234')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(500)
+    })
+
+    test('Should return 401 if no user is authenticated', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if no user is authenticated', async () => {
+        const response = await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .send()
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should NOT delete task if no user is authenticated', async () => {
+        await request(app)
+            .delete(`/tasks/${taskOne._id}`)
+            .send()
+
+        const task = await Task.findById(taskOne._id)
+        expect(task).toBeTruthy()
+    })
+})
