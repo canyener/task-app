@@ -647,3 +647,7 @@ describe('File uploads', () => {
         expect(response.body.error).toEqual(expectedErrorMessage)
     })
 })
+
+describe('POST /logout', () => {
+    
+})
