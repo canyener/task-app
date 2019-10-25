@@ -2,7 +2,7 @@ const request = require('supertest')
 
 const app = require('../src/app')
 const User = require('../src/models/user')
-const { userOneId, userOne, setupDatabase } = require('./fixtures/db')
+const { userOneId, userOne, userTwoId, userTwo, setupDatabase } = require('./fixtures/db')
 
 beforeEach(setupDatabase)
 
@@ -685,5 +685,21 @@ describe('POST /logout', () => {
 })
 
 describe('POST /users/logoutAll', () => {
-    
+    test('Should return 200', async () => {
+         await request(app)
+            .post('/users/logoutAll')
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should remove all tokens from authenticated user', async () => {
+        await request(app)
+            .post('/users/logoutAll')
+            .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+            .send()
+
+        const user = await User.findById(userTwoId)
+        expect(user.tokens.length).toEqual(0)
+    })
 })
