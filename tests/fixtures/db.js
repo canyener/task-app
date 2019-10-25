@@ -25,6 +25,8 @@ const userTwo = {
     password: 'userTwo1!',
     tokens: [{
         token: jwt.sign({_id: userTwoId}, process.env.JWT_SECRET)
+    },{
+        token: jwt.sign({ _id: userTwoId }, process.env.JWT_SECRET)
     }]
 }
 
