@@ -702,4 +702,20 @@ describe('POST /users/logoutAll', () => {
         const user = await User.findById(userTwoId)
         expect(user.tokens.length).toEqual(0)
     })
+
+    test('Should return 401 if no user is authenticated', async () => {
+        await request(app)
+            .post('/users/logoutAll')
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if no user is authenticated', async () => {
+        const response = await request(app)
+            .post('/users/logoutAll')
+            .send()
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
 })
