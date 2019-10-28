@@ -718,5 +718,23 @@ describe('File uploads', () => {
         const expectedErrorMessage = 'File too large'
         expect(response.body.error).toEqual(expectedErrorMessage)
     })
+
+    test('Should return 400 if no file is sent', async () => {
+        await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar', '')
+            .expect(400)
+    })
+
+    test('Should return validation error message if no file is sent', async () => {
+        const response = await request(app)
+            .post('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .attach('avatar','')
+
+        const expectedErrorMessage = 'No files sent!';
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
 })
 
