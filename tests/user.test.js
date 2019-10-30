@@ -738,3 +738,6 @@ describe('File uploads', () => {
     })
 })
 
+describe('DELETE /users/me/avatar (Delete Profile Picture)', () => {
+    
+})
