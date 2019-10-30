@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - 12.11.1
+services:
+  - mongodb
+before_script: 
+  - npm install
+script:
+  - npm start
+  - npm run ci-test
