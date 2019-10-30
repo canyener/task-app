@@ -7,10 +7,13 @@
 - Commiting env files on purpose for instructional reasons.
 
 # deployment steps
-- heroku create your-app-name-here
-- heroku config:set env_variable_key=env_variable_value
-- "heroku config:unset env_variable_key" to remove a variable which is already set
-- "git push heroku master" to deploy 
+```heroku create <your-app-name-here>```
+
+```heroku config:set <env_variable_key>=<env_variable_value>```
+
+```heroku config:unset <env_variable_key>``` to remove a variable which is already set
+
+```git push heroku master``` to deploy 
 
 # tests
 - Test cases are a bit overkill.
