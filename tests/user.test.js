@@ -739,5 +739,11 @@ describe('File uploads', () => {
 })
 
 describe('DELETE /users/me/avatar (Delete Profile Picture)', () => {
-    
+    test('Should return 200', async () => {
+        await request(app)
+            .delete('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })  
 })
