@@ -456,7 +456,7 @@ describe('POST /logout', () => {
         .expect(401)
     })
 
-    test('Should return authentication error message is user is unauthenticated', async () => {
+    test('Should return authentication error message if user is unauthenticated', async () => {
         const response = await request(app)
             .post('/users/logout')
             .send()
@@ -643,6 +643,42 @@ describe('DELETE /users/me (Delete Account)', () => {
 
         const users = await User.find({})
         expect(users.length).toEqual(2)
+    })
+})
+
+describe('DELETE /users/me/avatar (Delete Avatar)', () => {
+    test('Should return 200', async () => {
+        await request(app)
+            .delete('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should delete avatar from database', async () => {
+        await request(app)
+            .delete('/users/me/avatar')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+
+        const user = await User.findById(userOneId)
+        expect(user.avatar).toBeFalsy()
+    })
+    
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+            .delete('/users/me/avatar')
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if user is unauthenticated', async () => {
+        const response = await request(app)
+            .delete('/users/me/avatar')
+            .send()
+
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage) 
     })
 })
 
