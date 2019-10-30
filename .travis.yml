@@ -1,10 +1,13 @@
 language: node_js
 node_js:
   - 12.11.1
+env: 
+  - JWT_SECRET=asdafsadas1234
+  - MONGODBURL=mongodb://127.0.0.1:27017/task-manager-api
 services:
   - mongodb
 before_script: 
   - npm install
 script:
-  - npm run dev
+  - npm start
   - npm run ci-test
