@@ -1,4 +1,5 @@
 const request = require('supertest')
+const bcrypt = require('bcryptjs')
 
 const app = require('../src/app')
 const User = require('../src/models/user')
@@ -7,19 +8,39 @@ const { userOneId, userOne, userTwoId, userTwo, setupDatabase } = require('./fix
 beforeEach(setupDatabase)
 
 describe('GET /users/me (Read Profile)', () => {
-    test('Should get profile for user', async () => {
+    test('Should return 200 OK if user is authenticated', async () => {
         await request(app)
-                .get('/users/me')
-                .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-                .send()
-                .expect(200)
+            .get('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
     })
-    
-    test('Should NOT get profile for unauthenticated user', async () => {
+
+    test('Should return correct user data in response if user is authenticated', async () => {
+        const response = await request(app)
+            .get('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+        
+        const user = await User.findById(userOneId)
+        const userJson = JSON.parse(JSON.stringify(user))
+        expect(response.body).toStrictEqual(userJson)
+    })
+
+    test('Should return 401 if user is unauthenticated', async () => {
         await request(app)
-                .get('/users/me')
-                .send()
-                .expect(401)
+            .get('/users/me')
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if user is unauthenticated', async () => {
+        const response = await request(app)
+            .get('/users/me')
+            .send()
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
     })
 })
 
@@ -45,11 +66,11 @@ describe('POST /users (Signup)', () => {
             password: 'cancan1!'
         }
 
-        const response = await request(app)
+        await request(app)
             .post('/users')
             .send(validUser)
 
-        const user = await User.findById(response.body.user._id)
+        const user = await User.findOne({email: 'can@example.com'})
         expect(user).toBeTruthy() 
     })
 
@@ -64,12 +85,12 @@ describe('POST /users (Signup)', () => {
             .post('/users')
             .send(validUser)
 
-        const user = await User.findById(response.body.user._id)
+        const user = await User.findOne({email: 'can@example.com'})
 
         const expected = {
             user: {
                 name: 'Can',
-                email: 'can@example.com'
+                email: 'can@example.com'                
             },
             token: user.tokens[0].token
         }
@@ -77,20 +98,21 @@ describe('POST /users (Signup)', () => {
         expect(response.body).toMatchObject(expected)
     })
 
-    test('Should NOT save plain text password to database', async () => {
+    test('Should save encrypted password to database', async () => {
         const validUser = {
             name: 'Can',
             email: 'can@example.com',
             password: 'cancan1!'
         }
 
-        const response = await request(app)
+        await request(app)
             .post('/users')
             .send(validUser)
 
-        const user = User.findById(response.body.user._id)
+        const user = await User.findOne({email: 'can@example.com'})
+        const isMatch = await bcrypt.compare(validUser.password, user.password)
 
-        expect(user.password).not.toEqual('cancan1!')
+        expect(isMatch).toEqual(true)
     })
 
     test('Should return 400 with empty user name', async () => {

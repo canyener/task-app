@@ -58,7 +58,8 @@ const userSchema = new mongoose.Schema({
         type: Buffer
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    versionKey: false
 })
 
 userSchema.virtual('tasks', {
