@@ -1,4 +1,5 @@
 const request = require('supertest')
+const bcrypt = require('bcryptjs')
 
 const app = require('../src/app')
 const User = require('../src/models/user')
@@ -97,20 +98,21 @@ describe('POST /users (Signup)', () => {
         expect(response.body).toMatchObject(expected)
     })
 
-    test('Should NOT save plain text password to database', async () => {
+    test('Should save encrypted password to database', async () => {
         const validUser = {
             name: 'Can',
             email: 'can@example.com',
             password: 'cancan1!'
         }
 
-        const response = await request(app)
+        await request(app)
             .post('/users')
             .send(validUser)
 
-        const user = User.findById(response.body.user._id)
+        const user = await User.findOne({email: 'can@example.com'})
+        const isMatch = await bcrypt.compare(validUser.password, user.password)
 
-        expect(user.password).not.toEqual('cancan1!')
+        expect(isMatch).toEqual(true)
     })
 
     test('Should return 400 with empty user name', async () => {
