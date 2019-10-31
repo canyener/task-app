@@ -41,13 +41,6 @@ describe('#add', () => {
         const actual = await add(3, -4)
         expect(actual).toBe(expected)
     })
-    
-    // test('Async test demo', (done) => {
-    //     setTimeout(() => {
-    //         expect(1).toBe(2)
-    //         done()
-    //     }, 2000);
-    // })
 })
 
 describe('#addSync', () => {
