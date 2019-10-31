@@ -41,20 +41,6 @@ describe('GET /users/me (Read Profile)', () => {
         const expectedErrorMessage = 'Please authenticate!'
         expect(response.body.error).toEqual(expectedErrorMessage)
     })
-    // test('Should get profile for user', async () => {
-    //     await request(app)
-    //             .get('/users/me')
-    //             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-    //             .send()
-    //             .expect(200)
-    // })
-    
-    // test('Should NOT get profile for unauthenticated user', async () => {
-    //     await request(app)
-    //             .get('/users/me')
-    //             .send()
-    //             .expect(401)
-    // })
 })
 
 describe('POST /users (Signup)', () => {
