@@ -87,8 +87,8 @@ const taskEight = {
 }
 
 const setupDatabase = async () => {
-    await User.deleteMany()
-    await Task.deleteMany()
+    await User.deleteMany({}).exec()
+    await Task.deleteMany({}).exec()
     await new User(userOne).save()
     await new User(userTwo).save()
     await new Task(taskOne).save()
