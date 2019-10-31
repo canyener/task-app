@@ -8,6 +8,7 @@ const main = async () => {
     // await task.populate('owner').execPopulate()
     // console.log(task.owner)
 
+    //Some more changes for travis build tests
     const user = await User.findById('5d9108354884ff0ec857f862')
     await user.populate('tasks').execPopulate()
     console.log(user.tasks)
