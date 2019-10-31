@@ -7,6 +7,24 @@ const { userOneId, userOne, userTwoId, userTwo, setupDatabase } = require('./fix
 beforeEach(setupDatabase)
 
 describe('GET /users/me (Read Profile)', () => {
+    test('Should return 200 OK if user is authenticated', async () => {
+        await request(app)
+            .get('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+            .expect(200)
+    })
+
+    test('Should return correct user data in response if user is authenticated', async () => {
+        const response = await request(app)
+            .get('/users/me')
+            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+            .send()
+        
+        const user = await User.findById(userOneId)
+        const userJson = JSON.parse(JSON.stringify(user))
+        expect(response.body).toStrictEqual(userJson)
+    })
     // test('Should get profile for user', async () => {
     //     await request(app)
     //             .get('/users/me')
