@@ -65,11 +65,11 @@ describe('POST /users (Signup)', () => {
             password: 'cancan1!'
         }
 
-        const response = await request(app)
+        await request(app)
             .post('/users')
             .send(validUser)
 
-        const user = await User.findById(response.body.user._id)
+        const user = await User.findOne({email: 'can@example.com'})
         expect(user).toBeTruthy() 
     })
 
@@ -84,12 +84,12 @@ describe('POST /users (Signup)', () => {
             .post('/users')
             .send(validUser)
 
-        const user = await User.findById(response.body.user._id)
+        const user = await User.findOne({email: 'can@example.com'})
 
         const expected = {
             user: {
                 name: 'Can',
-                email: 'can@example.com'
+                email: 'can@example.com'                
             },
             token: user.tokens[0].token
         }
