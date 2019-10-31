@@ -58,45 +58,45 @@ describe('POST /users (Signup)', () => {
             .expect(201)
     })
 
-    test('Should save valid user to database', async () => {
+    // test('Should save valid user to database', async () => {
 
-        const validUser = {
-            name: 'Can',
-            email: 'can@example.com',
-            password: 'cancan1!'
-        }
+    //     const validUser = {
+    //         name: 'Can',
+    //         email: 'can@example.com',
+    //         password: 'cancan1!'
+    //     }
 
-        await request(app)
-            .post('/users')
-            .send(validUser)
+    //     await request(app)
+    //         .post('/users')
+    //         .send(validUser)
 
-        const user = await User.findOne({email: 'can@example.com'})
-        expect(user).toBeTruthy() 
-    })
+    //     const user = await User.findOne({email: 'can@example.com'})
+    //     expect(user).toBeTruthy() 
+    // })
 
-    test('Should return correct user data in response', async () => {
-        const validUser = {
-            name: 'Can',
-            email: 'can@example.com',
-            password: 'cancan1!'
-        }
+    // test('Should return correct user data in response', async () => {
+    //     const validUser = {
+    //         name: 'Can',
+    //         email: 'can@example.com',
+    //         password: 'cancan1!'
+    //     }
 
-        const response = await request(app)
-            .post('/users')
-            .send(validUser)
+    //     const response = await request(app)
+    //         .post('/users')
+    //         .send(validUser)
 
-        const user = await User.findOne({email: 'can@example.com'})
+    //     const user = await User.findOne({email: 'can@example.com'})
 
-        const expected = {
-            user: {
-                name: 'Can',
-                email: 'can@example.com'                
-            },
-            token: user.tokens[0].token
-        }
+    //     const expected = {
+    //         user: {
+    //             name: 'Can',
+    //             email: 'can@example.com'                
+    //         },
+    //         token: user.tokens[0].token
+    //     }
 
-        expect(response.body).toMatchObject(expected)
-    })
+    //     expect(response.body).toMatchObject(expected)
+    // })
 
     test('Should save encrypted password to database', async () => {
         const validUser = {
