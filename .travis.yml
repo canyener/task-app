@@ -3,12 +3,6 @@ node_js:
   - 12.11.1
 services:
   - mongodb
-addons:
- apt:
-   sources:
-   - mongodb-3.6-precise
-   packages:
-   - mongodb-org-server
 cache: 
   directories:
     - "node_modules"
