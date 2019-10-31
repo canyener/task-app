@@ -25,6 +25,22 @@ describe('GET /users/me (Read Profile)', () => {
         const userJson = JSON.parse(JSON.stringify(user))
         expect(response.body).toStrictEqual(userJson)
     })
+
+    test('Should return 401 if user is unauthenticated', async () => {
+        await request(app)
+            .get('/users/me')
+            .send()
+            .expect(401)
+    })
+
+    test('Should return authentication error message if user is unauthenticated', async () => {
+        const response = await request(app)
+            .get('/users/me')
+            .send()
+        
+        const expectedErrorMessage = 'Please authenticate!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
     // test('Should get profile for user', async () => {
     //     await request(app)
     //             .get('/users/me')
