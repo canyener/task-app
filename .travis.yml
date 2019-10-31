@@ -6,7 +6,7 @@ services:
 cache: 
   directories:
     - "node_modules"
-before_script: 
+install: 
   - npm install
 script:  
   - npm run ci-test
