@@ -59,7 +59,6 @@ describe('POST /users (Signup)', () => {
     })
 
     test('Should save valid user to database', async () => {
-
         const validUser = {
             name: 'Can',
             email: 'can@example.com',
