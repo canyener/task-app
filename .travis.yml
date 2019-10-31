@@ -7,5 +7,7 @@ before_script:
   - npm install
 script:  
   - npm run ci-test
+after_script:
+  - pkill mongod
 notifications:
   slack: adaslarco:7U9BV0TVqkrvgRhMG0UAU4b3
