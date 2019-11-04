@@ -460,6 +460,39 @@ describe('POST /users/login (Login)', () => {
                 })
                 .expect(400)
     })
+
+    test('Should return login error message with invalid credentials', async () => {
+        const response = await request(app)
+            .post('/users/login')
+            .send({
+                email: 'not@existing.com',
+                password: 'invalidpass1!'
+            })
+        const expectedErrorMessage = 'Unable to login!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should return 400 if password does not match', async () => {
+        await request(app)
+            .post('/users/login')
+            .send({
+                email: userOne.email,
+                password: 'invalidpass1!'
+            })
+            .expect(400)
+    })
+
+    test('SHould return login error message if password does not match', async () => {
+        const response = await request(app)
+            .post('/users/login')
+            .send({
+                email: userOne.email,
+                password: 'invalidpass1!'
+            })
+        
+        const expectedErrorMessage = 'Unable to login!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
 })
 
 describe('POST /logout', () => {
