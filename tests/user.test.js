@@ -460,6 +460,16 @@ describe('POST /users/login (Login)', () => {
                 })
                 .expect(400)
     })
+
+    test('Should return 400 if password does not match', async () => {
+        await request(app)
+            .post('/users/login')
+            .send({
+                email: userOne.email,
+                password: 'invalidpass1!'
+            })
+            .expect(400)
+    })
 })
 
 describe('POST /logout', () => {
