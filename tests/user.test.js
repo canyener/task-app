@@ -851,4 +851,20 @@ describe('GET /users/:id/avatar', () => {
 
             expect(response.get('Content-Type')).toEqual('image/png')
     })
+
+    test('Should return 404 with invalid objectid', async () => {
+        await request(app)
+            .get('/users/1234asd/avatar')
+            .send()
+            .expect(404)
+    })
+
+    test('Should return correct error message with invalid objectid', async () => {
+        const response = await request(app)
+            .get('/users/1234asd/avatar')
+            .send()
+        
+        const expectedErrorMessage = 'Cast to ObjectId failed for value \"1234asd\" at path \"_id\" for model \"User\"'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
 })
