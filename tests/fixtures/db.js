@@ -15,7 +15,8 @@ const userOne = {
     password: 'userOne1!',
     tokens: [{
         token: jwt.sign({_id: userOneId}, process.env.JWT_SECRET)
-    }]
+    }],
+    avatar: Buffer.alloc(11)
 }
 
 const userTwoId = new mongoose.Types.ObjectId()

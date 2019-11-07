@@ -829,3 +829,11 @@ describe('File uploads', () => {
     })
 })
 
+describe('GET /users/:id/avatar', () => {
+    test('Should return 200', async () => {
+        await request(app)
+            .get(`/users/${userOneId}/avatar`)
+            .send()
+            .expect(200)
+    })
+})
