@@ -883,4 +883,20 @@ describe('GET /users/:id/avatar', () => {
         const expectedErrorMessage = 'User or avatar not found!'
         expect(response.body.error).toEqual(expectedErrorMessage)
     })
+
+    test('Should return 404 if avatar not found', async () => {
+        await request(app)
+            .get(`/users/${userTwoId}/avatar`)
+            .send()
+            .expect(404)
+    })
+
+    test('Should return correct error message if avatar not found', async () => {
+        const response = await request(app)
+            .get(`/users/${userTwoId}/avatar`)
+            .send()
+        
+        const expectedErrorMessage = 'User or avatar not found!'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
 })
