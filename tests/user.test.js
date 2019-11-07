@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs')
 
 const app = require('../src/app')
 const User = require('../src/models/user')
-const { userOneId, userOne, userTwoId, userTwo, setupDatabase } = require('./fixtures/db')
+const { userOneId, userOne, userTwoId, userTwo, validObjectId, setupDatabase } = require('./fixtures/db')
 
 beforeEach(setupDatabase)
 
@@ -865,6 +865,22 @@ describe('GET /users/:id/avatar', () => {
             .send()
         
         const expectedErrorMessage = 'Cast to ObjectId failed for value \"1234asd\" at path \"_id\" for model \"User\"'
+        expect(response.body.error).toEqual(expectedErrorMessage)
+    })
+
+    test('Should return 404 if user not found', async () => {
+        await request(app)
+            .get(`/users/${validObjectId}/avatar`)
+            .send()
+            .expect(404)
+    })
+
+    test('Should return correct error message if user not found', async () => {
+        const response = await request(app)
+            .get(`/users/${validObjectId}/avatar`)
+            .send()
+        
+        const expectedErrorMessage = 'User or avatar not found!'
         expect(response.body.error).toEqual(expectedErrorMessage)
     })
 })
