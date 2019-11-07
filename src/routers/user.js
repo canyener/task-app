@@ -129,12 +129,12 @@ router.get('/:id/avatar', async (req, res) => {
         const user = await User.findById(req.params.id)
 
         if (!user || !user.avatar) {
-            throw new Error()
+            throw new Error("User or avatar not found!")
         }
         res.set('Content-Type', 'image/png')
         res.send(user.avatar)
     } catch (e) {
-        res.status(404).send()
+        res.status(404).send({ error: e.message })
     }
 })
 
