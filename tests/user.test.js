@@ -836,4 +836,19 @@ describe('GET /users/:id/avatar', () => {
             .send()
             .expect(200)
     })
+    test('Should return image in response', async () => {
+        const response = await request(app)
+            .get(`/users/${userOneId}/avatar`)
+            .send()
+        
+            expect(response.body).toBeInstanceOf(Buffer)                
+    })
+
+    test('Should return image/png as Content-Type in response', async () => {
+        const response = await request(app)
+            .get(`/users/${userOneId}/avatar`)
+            .send()
+
+            expect(response.get('Content-Type')).toEqual('image/png')
+    })
 })
