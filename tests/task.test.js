@@ -129,12 +129,12 @@ describe('GET /tasks/:id', () => {
         expect(response.body).toStrictEqual(expectedResult)
     })
 
-    test('Should return 404 with task id owned by other users', async () => {
+    test('Should return 204 with task id owned by other users', async () => {
         await request(app)
             .get(`/tasks/${taskThree._id}`)
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
-            .expect(404)
+            .expect(204)
     })
 
     test('Should not return task owned by other users', async () => {
@@ -154,12 +154,12 @@ describe('GET /tasks/:id', () => {
             .expect(500)
     })
 
-    test('Should return 404 if task not found in database', async () => {
+    test('Should return 204 if task not found in database', async () => {
         await request(app)
             .get(`/tasks/${validObjectId}`)
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
-            .expect(404)
+            .expect(204)
     })
 
     test('Should return 401 if user is unauthenticated', async () => {
@@ -446,7 +446,7 @@ describe('PATCH /tasks/:id', () => {
         expect(task).toMatchObject(expectedTask)
     })    
 
-    test('Should return 404 with tasks owned by other users', async () => {
+    test('Should return 204 with tasks owned by other users', async () => {
         await request(app)
             .patch(`/tasks/${taskThree._id}`)
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
@@ -454,7 +454,7 @@ describe('PATCH /tasks/:id', () => {
                 description: 'Updated task',
                 completed: true
             })
-            .expect(404)
+            .expect(204)
     })
 
     test('Should NOT update tasks owned by other users', async () => {
@@ -580,14 +580,14 @@ describe('PATCH /tasks/:id', () => {
             .expect(400)
     })
     
-    test('Should return 404 if object id is valid but task not found in database', async () => {
+    test('Should return 204 if object id is valid but task not found in database', async () => {
         await request(app)
             .patch(`/tasks/${validObjectId}`)
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)  
             .send({
                 description: 'Updated task'
             })
-            .expect(404)
+            .expect(204)
     })
 
     test('Should return 400 if invalid fields sent in request', async () => {
@@ -665,12 +665,12 @@ describe('DELETE /tasks/:id', () => {
         expect(response.body).toMatchObject(expectedResponse)
     })
 
-    test('Should return 404 if task owner is not authenticated user', async () => {
+    test('Should return 204 if task owner is not authenticated user', async () => {
         await request(app)
             .delete(`/tasks/${taskOne._id}`)
             .set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
             .send()
-            .expect(404)
+            .expect(204)
     })
 
     test('Should NOT delete tasks owned by other users', async () => {
@@ -683,12 +683,12 @@ describe('DELETE /tasks/:id', () => {
         expect(task).toBeTruthy()
     })
 
-    test('Should return 404 with valid object id that is not in database', async () => {
+    test('Should return 204 with valid object id that is not in database', async () => {
         await request(app)
             .delete(`/tasks/${validObjectId}`)
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send()
-            .expect(404)
+            .expect(204)
     })
 
     test('Should return 500 with invalid object id', async () => {
