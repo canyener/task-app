@@ -10,17 +10,13 @@
     "ci-test": "jest --runInBand",
     "coverage": "jest --runInBand --coverage"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "verbose": false
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/canyener/task-app.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Can YENER canyener1337@gmail.com",
+  "license": "MIT",
   "dependencies": {
     "@sendgrid/mail": "^7.1.0",
     "bcryptjs": "^2.4.3",
@@ -33,7 +29,6 @@
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
-    "env-cmd": "^10.1.0",
     "jest": "^26.0.0",
     "nodemon": "^2.0.3",
     "supertest": "^4.0.2"
