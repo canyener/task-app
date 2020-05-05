@@ -3,9 +3,18 @@ const bcrypt = require('bcryptjs')
 
 const app = require('../src/app')
 const User = require('../src/models/user')
-const { userOneId, userOne, userTwoId, userTwo, validObjectId, setupDatabase } = require('./fixtures/db')
+const { 
+    userOneId, 
+    userOne,
+    userTwoId, 
+    userTwo, 
+    validObjectId, 
+    setupDatabase, 
+    disconnectFromDatabase 
+} = require('./fixtures/db')
 
 beforeEach(setupDatabase)
+afterAll(disconnectFromDatabase)
 
 describe('GET /users/me (Read Profile)', () => {
     test('Should return 200 OK if user is authenticated', async () => {
