@@ -1,9 +1,10 @@
 const request = require('supertest')
 
 const app = require('../src/app')
-const {validFormatToken, setupDatabase} = require('./fixtures/db')
+const { validFormatToken, setupDatabase, disconnectFromDatabase } = require('./fixtures/db')
 
 beforeEach(setupDatabase)
+afterAll(disconnectFromDatabase)
 
 describe('Authentication Middleware', () => {
     test('Should return 401 if token is valid but user not found in database', async () => {

@@ -9,10 +9,12 @@ const {
     taskOne, 
     taskTwo,
     taskThree,
-    setupDatabase
+    setupDatabase,
+    disconnectFromDatabase
 } = require('./fixtures/db')
 
 beforeEach(setupDatabase)
+afterAll(disconnectFromDatabase)
 
 describe('GET /tasks', () => {
     test('Should return 200 if user is authenticated', async () => {
