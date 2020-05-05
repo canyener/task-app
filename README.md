@@ -3,8 +3,7 @@
 <!-- [![Build Status](https://travis-ci.com/canyener/task-app.svg?token=WqoGmsJD2eWcyCxqP2Hy&branch=master)](https://travis-ci.com/canyener/task-app) -->
 
 - A simple task manager written in Node.Js for learning purposes.
-- Includes file uploads, email sending, CI, Slack integrations and user profiles.
-- Commiting env files on purpose for instructional reasons.
+- Includes file uploads, email sending, CI, Testing with jest, Slack integrations and user profiles.
 
 ## deployment steps
 ```heroku create <your-app-name-here>```
