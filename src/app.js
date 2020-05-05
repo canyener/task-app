@@ -1,3 +1,4 @@
+require('../config/env.config')
 const express = require('express')
 require('./db/mongoose')
 
