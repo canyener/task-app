@@ -1,7 +1,7 @@
 # Task App
 [![CircleCI](https://circleci.com/gh/canyener/task-app/tree/master.svg?style=svg&circle-token=7c43c72eec616a743ff4aab417d38c6f37e968b1)](https://circleci.com/gh/canyener/task-app/tree/master)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/canyener/task-app?label=latest-release)
-![David](https://img.shields.io/david/dev/canyener/task-app)
+![David](https://img.shields.io/david/canyener/task-app)
 ![GitHub](https://img.shields.io/github/license/canyener/task-app)
 
 - A simple task manager written in Node.Js for learning purposes.
