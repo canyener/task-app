@@ -25,7 +25,6 @@ jobs: # a collection of steps
           command: npm run ci-test
           environment:
             PORT: $PORT_TESTS
-            MONGODB_URL: $MONGODB_URL_TESTS
             JWT_SECRET: $JWT_SECRET
             SENDGRID_API_KEY: $SENDGRID_API_KEY          
       - run: # run coverage report
@@ -33,7 +32,6 @@ jobs: # a collection of steps
           command: npm run coverage
           environment:
             PORT: $PORT_TESTS
-            MONGODB_URL: $MONGODB_URL_TESTS
             JWT_SECRET: $JWT_SECRET
             SENDGRID_API_KEY: $SENDGRID_API_KEY      
       - store_artifacts: # special step to save test results as as artifact
