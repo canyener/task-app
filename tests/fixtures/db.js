@@ -103,6 +103,10 @@ const setupDatabase = async () => {
     await new Task(taskEight).save()
 }
 
+const disconnectFromDatabase = async () => {
+    await mongoose.disconnect()
+}
+
 module.exports = {
     validObjectId,
     validFormatToken,
@@ -113,5 +117,6 @@ module.exports = {
     taskOne,
     taskTwo,
     taskThree,
-    setupDatabase
+    setupDatabase,
+    disconnectFromDatabase
 }
