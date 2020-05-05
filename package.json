@@ -10,10 +10,6 @@
     "ci-test": "jest --runInBand",
     "coverage": "jest --runInBand --coverage"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "verbose": false
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/canyener/task-app.git"
