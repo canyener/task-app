@@ -504,7 +504,7 @@ describe('PATCH /tasks/:id', () => {
     })
 
     test('Should return 400 if description is empty', async () => {
-        const response = await request(app)
+        await request(app)
             .patch(`/tasks/${taskOne._id}`)
             .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
             .send({
