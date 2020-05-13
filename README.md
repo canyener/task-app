@@ -1,5 +1,6 @@
 # Task App
 [![CircleCI](https://circleci.com/gh/canyener/task-app/tree/master.svg?style=svg&circle-token=7c43c72eec616a743ff4aab417d38c6f37e968b1)](https://circleci.com/gh/canyener/task-app/tree/master)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=canyener_task-app&metric=alert_status)](https://sonarcloud.io/dashboard?id=canyener_task-app)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/canyener/task-app?label=latest-release)
 ![David](https://img.shields.io/david/canyener/task-app)
 ![GitHub contributors](https://img.shields.io/github/contributors/canyener/task-app)
