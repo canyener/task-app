@@ -28,7 +28,7 @@
     "validator": "^13.6.0"
   },
   "devDependencies": {
-    "dotenv": "^9.0.0",
+    "dotenv": "^9.0.1",
     "jest": "^26.6.3",
     "nodemon": "^2.0.7",
     "supertest": "^6.1.3"
