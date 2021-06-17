@@ -18,7 +18,7 @@
   "author": "Can YENER canyener1337@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@sendgrid/mail": "^7.4.4",
+    "@sendgrid/mail": "^7.4.5",
     "bcryptjs": "^2.4.3",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
