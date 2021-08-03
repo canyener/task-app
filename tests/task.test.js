@@ -305,7 +305,6 @@ describe('POST /tasks', () => {
         const tasks = await Task.find({})
         expect(tasks.length).toEqual(8)
     })
-
     
     test('Should ignore invalid fields in request', async () => {
         await request(app)
@@ -319,17 +318,6 @@ describe('POST /tasks', () => {
         const task = await Task.findOne({ description: 'Test task' })
         expect(task.description).toEqual('Test task')
         expect(task.invalidField).toBeFalsy()
-    })
-
-    test('Should return 400 with invalid completed field', async () => {
-        await request(app)
-            .post('/tasks')
-            .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-            .send({
-                description: 'Test task',
-                completed: 'invalid'
-            })
-            .expect(400)
     })
 
     test('Should return 400 with invalid completed field', async () => {
