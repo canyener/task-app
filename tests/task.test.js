@@ -352,7 +352,7 @@ describe('POST /tasks', () => {
                 completed: 'invalid'
             })
         
-        const expectedErrorMessage = 'Task validation failed: completed: Cast to Boolean failed for value \"invalid\" at path \"completed\"'
+        const expectedErrorMessage = 'Task validation failed: completed: Cast to Boolean failed for value \"invalid\" (type string) at path \"completed\"'
         expect(response.body.message).toEqual(expectedErrorMessage)
     })
 
@@ -568,7 +568,7 @@ describe('PATCH /tasks/:id', () => {
                 description: 'Updated task',
                 completed: 'invalid'
             })
-        const expectedErrorMessage = 'Task validation failed: completed: Cast to Boolean failed for value \"invalid\" at path \"completed\"'
+        const expectedErrorMessage = 'Task validation failed: completed: Cast to Boolean failed for value \"invalid\" (type string) at path \"completed\"'
         expect(response.body.message).toEqual(expectedErrorMessage)
     })
 

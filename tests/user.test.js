@@ -88,7 +88,7 @@ describe('GET /users/:id/avatar', () => {
             .get('/users/1234asd/avatar')
             .send()
         
-        const expectedErrorMessage = 'Cast to ObjectId failed for value \"1234asd\" at path \"_id\" for model \"User\"'
+        const expectedErrorMessage = 'Cast to ObjectId failed for value \"1234asd\" (type string) at path \"_id\" for model \"User\"'
         expect(response.body.error).toEqual(expectedErrorMessage)
     })
 
@@ -438,7 +438,7 @@ describe('POST /users (Signup)', () => {
             .post('/users')
             .send(invalidUser)
         
-        const expectedErrorMessage = 'User validation failed: age: Cast to Number failed for value \"invalid\" at path \"age\"'
+        const expectedErrorMessage = 'User validation failed: age: Cast to Number failed for value \"invalid\" (type string) at path \"age\"'
         expect(response.body.message).toEqual(expectedErrorMessage)
     })
 
